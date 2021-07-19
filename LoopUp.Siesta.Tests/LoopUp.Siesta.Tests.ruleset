@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="LoopUp.Siesta.Tests.ruleset" Description="StyleCop rules for Siests tests" ToolsVersion="16.0">
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+        <!-- XML comment analysis disabled -->
+        <Rule Id="SA0001" Action="None" />
+
+        <!-- File must have header -->
+        <Rule Id="SA1633" Action="None" />
+
+        <!-- Elements should be documented -->
+        <Rule Id="SA1600" Action="None" />
+    </Rules>
+</RuleSet>
