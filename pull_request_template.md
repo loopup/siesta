@@ -25,3 +25,11 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
+
+# Comments
+
+Please start all comments with the correct emoji to denote the severity of the comment:
+
+:sweat_drops: - No big deal, does not need fixing, just a comment
+:hammer: - please fix before merging, once fixed can then be merged
+:fire: - needs completely reworking and will need re-reviewing
