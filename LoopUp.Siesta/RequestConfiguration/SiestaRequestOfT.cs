@@ -7,14 +7,14 @@ namespace LoopUp.Siesta.RequestConfiguration
     /// Base class for any request that expects data to be returned.
     /// </summary>
     /// <typeparam name="T">The expected data return type.</typeparam>
-    public abstract class SiestaRequestBase<T> : SiestaRequestBase
+    public abstract class SiestaRequest<T> : SiestaRequest
     {
         private readonly Type contentType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiestaRequestBase{T}"/> class.
+        /// Initializes a new instance of the <see cref="SiestaRequest{T}"/> class.
         /// </summary>
-        protected SiestaRequestBase() => this.contentType = typeof(T);
+        protected SiestaRequest() => this.contentType = typeof(T);
     }
 }
 #pragma warning restore SA1649

@@ -4,7 +4,7 @@ namespace LoopUp.Siesta.Tests.RequestConfiguration
     using LoopUp.Siesta.RequestConfiguration;
     using Xunit;
 
-    public class SiestaRequestBaseTests
+    public class SiestaRequestTests
     {
         #region GenerateRequestMessage
 
@@ -19,7 +19,7 @@ namespace LoopUp.Siesta.Tests.RequestConfiguration
         #endregion
     }
 
-    public class UnimplementedSiestaRequest : SiestaRequestBase
+    public class UnimplementedSiestaRequest : SiestaRequest
     {
     }
 }

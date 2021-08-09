@@ -1,11 +1,9 @@
-using LoopUp.Siesta.RequestConfiguration;
-
 namespace LoopUp.Siesta
 {
     using System.Net.Http;
     using System.Threading.Tasks;
-    using LoopUp.Siesta.DtoConfiguration;
     using LoopUp.Siesta.Exceptions;
+    using LoopUp.Siesta.RequestConfiguration;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -25,7 +23,7 @@ namespace LoopUp.Siesta
         }
 
         /// <inheritdoc />
-        public async Task<Task> SendAsync(SiestaRequestBase siestaRequest)
+        public async Task<Task> SendAsync(SiestaRequest siestaRequest)
         {
             var response = await this.client.SendAsync(siestaRequest.GenerateRequestMessage());
 
@@ -45,9 +43,21 @@ namespace LoopUp.Siesta
         }
 
         /// <inheritdoc />
-        public async Task<T> SendAsync<T>(SiestaRequestBase<T> siestaRequest)
+        public async Task<T> SendAsync<T>(SiestaRequest<T> siestaRequest) =>
+            await this.SendRequestWithExpectedContent<T>(siestaRequest.GenerateRequestMessage());
+
+        /// <inheritdoc />
+        public async Task<T> SendAsync<T>(SiestaPatchRequest<T> siestaPatchRequest)
         {
-            var response = await this.client.SendAsync(siestaRequest.GenerateRequestMessage());
+            var originalResource = await this.SendRequestWithExpectedContent<T>(siestaPatchRequest.GenerateGetRequestMessage());
+
+            return await this.SendRequestWithExpectedContent<T>(
+                siestaPatchRequest.GeneratePatchRequestMessage(originalResource));
+        }
+
+        private async Task<T> SendRequestWithExpectedContent<T>(HttpRequestMessage requestMessage)
+        {
+            var response = await this.client.SendAsync(requestMessage);
 
             if (!response.IsSuccessStatusCode)
             {
