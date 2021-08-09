@@ -6,7 +6,7 @@ namespace LoopUp.Siesta.RequestConfiguration
     /// <summary>
     /// Base class for any request that expects no data to be returned.
     /// </summary>
-    public abstract class SiestaRequestBase
+    public abstract class SiestaRequest
     {
         /// <summary>
         /// Method that will generate the necessary <see cref="HttpRequestMessage"/> from the request model.

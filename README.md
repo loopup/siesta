@@ -185,6 +185,14 @@ public async Task<DeserializedPagedList<CustomerDto>> GetCustomers(string name)
 }
 ```
 
+### Patch request
+
+PATCH requests are rather special and challenging. Siesta provides a special request class for PATCH requests. It works based on the idea of having the modified version of a resource and then the original version provided to it. You therefore have to implement both a GET for the original resource and the PATCH request.
+
+Siesta also provides a helper class for `JsonPatchDocument`. This class contains a method for generating a PATCH document by comparing two versions of a resource. This method is not perfect. It will handle nested properties and hierarchy.
+
+It will also handle moving, adding or removing items in anything that implements `IList<T>`. However, it will not do nesting within an `IList<T>`. Therefore, for this to work properly anything complex inside an `IList` needs to implement comparisons, otherwise the PATCH will think every item in the list has changed, which may or may not cause issues.
+
 It is recommended that you have a separate project to contain DTOs and Siesta requests that can be deployed as a Nuget package and consumed by any consumers of your API.
 
 Hopefully it can be seen that this gives you a much greater control over how your API is controlled. You can fully unit test your requests and the effort for making calls accurately only has to happen once!
