@@ -1,19 +1,13 @@
-using LoopUp.Siesta.RequestConfiguration;
-
 namespace LoopUp.Siesta.Tests
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq.Expressions;
     using System.Net;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using LoopUp.Siesta.DtoConfiguration;
     using LoopUp.Siesta.Exceptions;
-    using LoopUp.Siesta.Serialization;
-    using Microsoft.AspNetCore.WebUtilities;
+    using LoopUp.Siesta.RequestConfiguration;
     using Moq;
     using Moq.Protected;
     using Newtonsoft.Json;
@@ -35,40 +29,23 @@ namespace LoopUp.Siesta.Tests
             this.sut = new SiestaClient(httpClient);
         }
 
-        #region SendAsync
+        #region SendAsync content expected
 
         [Fact]
         public async Task SendAsync_HttpCallSuccessful_ReturnsContent()
         {
             var httpRequest = new HttpRequestMessage();
-            var dto = new TestContentSiestaRequest(httpRequest);
+            var request = new TestContentSiestaRequest(httpRequest);
             var responseContent = new TestContent
             {
-                Id = dto.Id,
+                Id = request.Id,
             };
 
             this.SetupMessageHandler(responseContent, httpRequest);
 
-            var result = await this.sut.SendAsync(dto);
+            var result = await this.sut.SendAsync(request);
 
             result.Should().BeEquivalentTo(responseContent);
-        }
-
-        [Fact]
-        public async Task SendAsync_NoContentExpectedHttpCallSuccessful_ReturnsCompletedTask()
-        {
-            var httpRequest = new HttpRequestMessage();
-            var dto = new TestNoContentSiestaRequest(httpRequest);
-            var responseMessage = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-            };
-
-            this.SetupMessageHandler(responseMessage, httpRequest);
-
-            var result = await this.sut.SendAsync(dto);
-
-            result.IsCompleted.Should().BeTrue();
         }
 
         [Fact]
@@ -79,12 +56,12 @@ namespace LoopUp.Siesta.Tests
             {
                 StatusCode = HttpStatusCode.BadRequest,
             };
-            var dto = new TestContentSiestaRequest(httpRequest);
+            var request = new TestContentSiestaRequest(httpRequest);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
             var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(dto));
+                this.sut.SendAsync(request));
 
             exception.FailedHttpResponseMessage.Should().Be(responseMessage);
             exception.Message.Should().Be("HTTP call was not successful.");
@@ -99,12 +76,12 @@ namespace LoopUp.Siesta.Tests
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent("just a string"),
             };
-            var dto = new TestContentSiestaRequest(httpRequest);
+            var request = new TestContentSiestaRequest(httpRequest);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
             var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(dto));
+                this.sut.SendAsync(request));
 
             exception.FailedHttpResponseMessage.Should().Be(responseMessage);
             exception.Message.Should().Be("Content was not as expected.");
@@ -118,15 +95,223 @@ namespace LoopUp.Siesta.Tests
             {
                 StatusCode = HttpStatusCode.OK,
             };
-            var dto = new TestContentSiestaRequest(httpRequest);
+            var request = new TestContentSiestaRequest(httpRequest);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
             var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(dto));
+                this.sut.SendAsync(request));
 
             exception.FailedHttpResponseMessage.Should().Be(responseMessage);
             exception.Message.Should().Be("Content was unexpectedly null.");
+        }
+
+        #endregion
+
+        #region SendAsync no content expected
+
+        [Fact]
+        public async Task SendAsync_NoContentExpectedHttpCallSuccessful_ReturnsCompletedTask()
+        {
+            var httpRequest = new HttpRequestMessage();
+            var request = new TestNoContentSiestaRequest(httpRequest);
+            var responseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+            };
+
+            this.SetupMessageHandler(responseMessage, httpRequest);
+
+            var result = await this.sut.SendAsync(request);
+
+            result.IsCompleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SendAsync_NoContentExpectedHttpCallReturnsUnsuccessful_ThrowsSiestaHttpException()
+        {
+            var httpRequest = new HttpRequestMessage();
+            var responseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+            };
+            var request = new TestNoContentSiestaRequest(httpRequest);
+
+            this.SetupMessageHandler(responseMessage, httpRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(responseMessage);
+            exception.Message.Should().Be("HTTP call was not successful.");
+        }
+
+        [Fact]
+        public async Task SendAsync_NoContentExpectedHttpContentNotNull_ThrowsSiestaHttpException()
+        {
+            var httpRequest = new HttpRequestMessage();
+            var responseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("just a string"),
+            };
+            var request = new TestNoContentSiestaRequest(httpRequest);
+
+            this.SetupMessageHandler(responseMessage, httpRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(responseMessage);
+            exception.Message.Should().Be("Content was not as expected.");
+        }
+
+        #endregion
+
+        #region SendAsync patch request
+
+        [Fact]
+        public async Task SendAsync_PatchRequestFailsToGetOriginal_ThrowsSiestaHttpException()
+        {
+            var getRequest = new HttpRequestMessage();
+            var getResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+            };
+            var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest);
+
+            this.SetupMessageHandler(getResponse, getRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(getResponse);
+            exception.Message.Should().Be("HTTP call was not successful.");
+        }
+
+        [Fact]
+        public async Task SendAsync_PatchRequestGetHttpContentDoesNotMatchExpectedFormat_ThrowsSiestaHttpException()
+        {
+            var getRequest = new HttpRequestMessage();
+            var getResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("just a string"),
+            };
+            var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest);
+
+            this.SetupMessageHandler(getResponse, getRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(getResponse);
+            exception.Message.Should().Be("Content was not as expected.");
+        }
+
+        [Fact]
+        public async Task SendAsync_PatchRequestGetHttpContentIsNull_ThrowsSiestaHttpException()
+        {
+            var getRequest = new HttpRequestMessage();
+            var getResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null,
+            };
+            var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest);
+
+            this.SetupMessageHandler(getResponse, getRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(getResponse);
+            exception.Message.Should().Be("Content was unexpectedly null.");
+        }
+
+        [Fact]
+        public async Task SendAsync_PatchRequestGetSuccessfulPatchUnsuccessful_ThrowsSiestaHttpException()
+        {
+            var getRequest = new HttpRequestMessage();
+            var getContent = new TestContent();
+            var patchRequest = new HttpRequestMessage();
+            var patchResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+            };
+            var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
+
+            this.SetupMessageHandler(getContent, getRequest);
+            this.SetupMessageHandler(patchResponse, patchRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(patchResponse);
+            exception.Message.Should().Be("HTTP call was not successful.");
+        }
+
+        [Fact]
+        public async Task SendAsync_PatchRequestGetSuccessfulPatchContentNotAsExpected_ThrowsSiestaHttpException()
+        {
+            var getRequest = new HttpRequestMessage();
+            var getContent = new TestContent();
+            var patchRequest = new HttpRequestMessage();
+            var patchResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("just a string"),
+            };
+            var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
+
+            this.SetupMessageHandler(getContent, getRequest);
+            this.SetupMessageHandler(patchResponse, patchRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(patchResponse);
+            exception.Message.Should().Be("Content was not as expected.");
+        }
+
+        [Fact]
+        public async Task SendAsync_PatchRequestGetSuccessfulPatchContentNull_ThrowsSiestaHttpException()
+        {
+            var getRequest = new HttpRequestMessage();
+            var getContent = new TestContent();
+            var patchRequest = new HttpRequestMessage();
+            var patchResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null,
+            };
+            var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
+
+            this.SetupMessageHandler(getContent, getRequest);
+            this.SetupMessageHandler(patchResponse, patchRequest);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.FailedHttpResponseMessage.Should().Be(patchResponse);
+            exception.Message.Should().Be("Content was unexpectedly null.");
+        }
+
+        [Fact]
+        public async Task SendAsync_PatchRequestGetSuccessfulPatchSuccessful_ReturnsResource()
+        {
+            var getRequest = new HttpRequestMessage();
+            var getContent = new TestContent();
+            var patchRequest = new HttpRequestMessage();
+            var patchResponseContent = new TestContent();
+            var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
+
+            this.SetupMessageHandler(getContent, getRequest);
+            this.SetupMessageHandler(patchResponseContent, patchRequest);
+
+            var result = await this.sut.SendAsync(request);
+
+            result.Should().BeEquivalentTo(patchResponseContent);
         }
 
         #endregion
@@ -162,7 +347,7 @@ namespace LoopUp.Siesta.Tests
         }
     }
 
-    public class TestContentSiestaRequest : SiestaRequestBase<TestContent>
+    internal class TestContentSiestaRequest : SiestaRequest<TestContent>
     {
         private readonly HttpRequestMessage requestMessage;
 
@@ -176,7 +361,7 @@ namespace LoopUp.Siesta.Tests
         }
     }
 
-    public class TestNoContentSiestaRequest : SiestaRequestBase
+    internal class TestNoContentSiestaRequest : SiestaRequest
     {
         private readonly HttpRequestMessage requestMessage;
 
@@ -190,7 +375,30 @@ namespace LoopUp.Siesta.Tests
         }
     }
 
-    public class TestContent
+    internal class TestPatchRequest : SiestaPatchRequest<TestContent>
+    {
+        private readonly HttpRequestMessage requestMessage;
+        private readonly HttpRequestMessage getRequestMessage;
+
+        public TestPatchRequest(TestContent testContent, HttpRequestMessage? requestMessage = null, HttpRequestMessage? getRequestMessage = null)
+            : base(testContent)
+        {
+            this.requestMessage = requestMessage ?? new HttpRequestMessage();
+            this.getRequestMessage = getRequestMessage ?? new HttpRequestMessage();
+        }
+
+        public override HttpRequestMessage GeneratePatchRequestMessage(TestContent originalResource)
+        {
+            return this.requestMessage;
+        }
+
+        public override HttpRequestMessage GenerateGetRequestMessage()
+        {
+            return this.getRequestMessage;
+        }
+    }
+
+    internal class TestContent
     {
         public Guid Id { get; set; }
     }
