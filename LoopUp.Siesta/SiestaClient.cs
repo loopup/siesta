@@ -9,23 +9,89 @@ namespace LoopUp.Siesta
     /// <summary>
     /// The <see cref="SiestaClient"/> that can be used to communicate with an API built using Siesta.
     /// </summary>
-    public class SiestaClient : ISiestaClient
+    public abstract class SiestaClient : ISiestaClient
     {
         private readonly HttpClient client;
+        private readonly string? correlationIdHeaderName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SiestaClient"/> class.
         /// </summary>
         /// <param name="httpClient">A pre-configured <see cref="HttpClient"/>.</param>
-        public SiestaClient(HttpClient httpClient)
+        protected SiestaClient(HttpClient httpClient)
         {
             this.client = httpClient;
+            this.correlationIdHeaderName = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SiestaClient"/> class.
+        /// </summary>
+        /// <param name="httpClient">A pre-configured <see cref="HttpClient"/>.</param>
+        /// <param name="siestaClientConfigurationOptions">Configuration options for a <see cref="SiestaClient"/>.</param>
+        protected SiestaClient(HttpClient httpClient, SiestaClientConfigurationOptions siestaClientConfigurationOptions)
+        {
+            this.client = httpClient;
+            this.correlationIdHeaderName = siestaClientConfigurationOptions.RequestHeaderCorrelationIdKey;
         }
 
         /// <inheritdoc />
         public async Task<Task> SendAsync(SiestaRequest siestaRequest)
         {
-            var response = await this.client.SendAsync(siestaRequest.GenerateRequestMessage());
+            return await this.SendRequestWithNoExpectedContent(siestaRequest);
+        }
+
+        /// <inheritdoc />
+        public async Task<Task> SendAsync(SiestaRequest siestaRequest, string currentCorrelationId)
+        {
+            return await this.SendRequestWithNoExpectedContent(siestaRequest, currentCorrelationId);
+        }
+
+        /// <inheritdoc />
+        public async Task<TReturn> SendAsync<TReturn>(SiestaRequest<TReturn> siestaRequest)
+        {
+            return await this.SendRequestWithExpectedContent<TReturn>(siestaRequest.GenerateRequestMessage());
+        }
+
+        /// <inheritdoc />
+        public async Task<TReturn> SendAsync<TReturn>(SiestaRequest<TReturn> siestaRequest, string currentCorrelationId)
+        {
+            return await this.SendRequestWithExpectedContent<TReturn>(siestaRequest.GenerateRequestMessage(), currentCorrelationId);
+        }
+
+        /// <inheritdoc />
+        public async Task<TReturn> SendAsync<TReturn>(SiestaPatchRequest<TReturn> siestaPatchRequest)
+        {
+            var originalResource = await this.SendRequestWithExpectedContent<TReturn>(siestaPatchRequest.GenerateGetRequestMessage());
+
+            return await this.SendRequestWithExpectedContent<TReturn>(
+                siestaPatchRequest.GeneratePatchRequestMessage(originalResource));
+        }
+
+        /// <inheritdoc />
+        public async Task<TReturn> SendAsync<TReturn>(SiestaPatchRequest<TReturn> siestaPatchRequest, string currentCorrelationId)
+        {
+            var originalResource = await this.SendRequestWithExpectedContent<TReturn>(siestaPatchRequest.GenerateGetRequestMessage(), currentCorrelationId);
+
+            return await this.SendRequestWithExpectedContent<TReturn>(
+                siestaPatchRequest.GeneratePatchRequestMessage(originalResource), currentCorrelationId);
+        }
+
+        private async Task<Task> SendRequestWithNoExpectedContent(SiestaRequest siestaRequest, string? currentCorrelationId = null)
+        {
+            var requestMessage = siestaRequest.GenerateRequestMessage();
+
+            if (currentCorrelationId is not null)
+            {
+                if (this.correlationIdHeaderName is null)
+                {
+                    throw new SiestaConfigurationException(ConfigurationIssue.CorrelationIdHeaderNotConfigured);
+                }
+
+                requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
+            }
+
+            var response = await this.client.SendAsync(requestMessage);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -42,21 +108,18 @@ namespace LoopUp.Siesta
             return Task.CompletedTask;
         }
 
-        /// <inheritdoc />
-        public async Task<T> SendAsync<T>(SiestaRequest<T> siestaRequest) =>
-            await this.SendRequestWithExpectedContent<T>(siestaRequest.GenerateRequestMessage());
-
-        /// <inheritdoc />
-        public async Task<T> SendAsync<T>(SiestaPatchRequest<T> siestaPatchRequest)
+        private async Task<T> SendRequestWithExpectedContent<T>(HttpRequestMessage requestMessage, string? currentCorrelationId = null)
         {
-            var originalResource = await this.SendRequestWithExpectedContent<T>(siestaPatchRequest.GenerateGetRequestMessage());
+            if (currentCorrelationId is not null)
+            {
+                if (this.correlationIdHeaderName is null)
+                {
+                    throw new SiestaConfigurationException(ConfigurationIssue.CorrelationIdHeaderNotConfigured);
+                }
 
-            return await this.SendRequestWithExpectedContent<T>(
-                siestaPatchRequest.GeneratePatchRequestMessage(originalResource));
-        }
+                requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
+            }
 
-        private async Task<T> SendRequestWithExpectedContent<T>(HttpRequestMessage requestMessage)
-        {
             var response = await this.client.SendAsync(requestMessage);
 
             if (!response.IsSuccessStatusCode)

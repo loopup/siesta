@@ -1,4 +1,3 @@
-#pragma warning disable SA1649
 namespace LoopUp.Siesta.RequestConfiguration
 {
     using System.Net.Http;
@@ -46,4 +45,3 @@ namespace LoopUp.Siesta.RequestConfiguration
         }
     }
 }
-#pragma warning restore SA1649
