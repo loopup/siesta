@@ -1,6 +1,7 @@
 namespace LoopUp.Siesta.Tests
 {
     using System;
+    using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Threading;
@@ -26,13 +27,13 @@ namespace LoopUp.Siesta.Tests
                 BaseAddress = new Uri("https://test.service.com"),
             };
 
-            this.sut = new SiestaClient(httpClient);
+            this.sut = new MyClient(httpClient);
         }
 
         #region SendAsync content expected
 
         [Fact]
-        public async Task SendAsync_HttpCallSuccessful_ReturnsContent()
+        public async Task SendAsyncContentExpected_HttpCallSuccessful_ReturnsContent()
         {
             var httpRequest = new HttpRequestMessage();
             var request = new TestContentSiestaRequest(httpRequest);
@@ -43,13 +44,63 @@ namespace LoopUp.Siesta.Tests
 
             this.SetupMessageHandler(responseContent, httpRequest);
 
-            var result = await this.sut.SendAsync(request);
+            var result = await this.sut.SendAsync<TestContent>(request);
 
             result.Should().BeEquivalentTo(responseContent);
         }
 
         [Fact]
-        public async Task SendAsync_HttpCallReturnsUnsuccessful_ThrowsSiestaHttpException()
+        public async Task SendAsyncContent_CurrentCorrelationIdProvidedCallSuccessful_ReturnsContent()
+        {
+            var httpRequest = new HttpRequestMessage();
+            var request = new TestContentSiestaRequest(httpRequest);
+            var correlationId = Guid.NewGuid().ToString();
+            var responseContent = new TestContent
+            {
+                Id = request.Id,
+            };
+            var headerName = "X-Correlation-ID";
+            var client = new MyClient(
+                new HttpClient(this.httpMessageHandlerMock.Object)
+                {
+                    BaseAddress = new Uri("https://base.address.com"),
+                },
+                headerName);
+
+            this.httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(r => r.Headers.GetValues(headerName).First() == correlationId),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(JsonConvert.SerializeObject(responseContent)),
+                });
+
+            var result = await client.SendAsync(request, correlationId);
+
+            result.Should().BeEquivalentTo(responseContent);
+        }
+
+        [Fact]
+        public void SendAsyncContent_CurrentCorrelationIdBytHeaderNotConfigured_ThrowsConfigurationException()
+        {
+            var clientWithoutHeaderConfigured = new MyClient(new HttpClient());
+
+            Func<Task> action = async () => await clientWithoutHeaderConfigured.SendAsync(
+                new TestContentSiestaRequest(),
+                Guid.NewGuid().ToString());
+
+            action
+                .Should()
+                .Throw<SiestaConfigurationException>()
+                .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
+        }
+
+        [Fact]
+        public async Task SendAsyncContent_HttpCallReturnsUnsuccessful_ThrowsSiestaHttpException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -68,7 +119,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_HttpContentDoesNotMatchExpectedFormat_ThrowsSiestaHttpException()
+        public async Task SendAsyncContent_HttpContentDoesNotMatchExpectedFormat_ThrowsSiestaHttpException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -88,7 +139,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_HttpContentIsNullWhenShouldNotBe_ThrowsSiestaHttpException()
+        public async Task SendAsyncContent_HttpContentIsNullWhenShouldNotBe_ThrowsSiestaHttpException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -111,7 +162,7 @@ namespace LoopUp.Siesta.Tests
         #region SendAsync no content expected
 
         [Fact]
-        public async Task SendAsync_NoContentExpectedHttpCallSuccessful_ReturnsCompletedTask()
+        public async Task SendAsyncNoContent_ExpectedHttpCallSuccessful_ReturnsCompletedTask()
         {
             var httpRequest = new HttpRequestMessage();
             var request = new TestNoContentSiestaRequest(httpRequest);
@@ -128,7 +179,52 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_NoContentExpectedHttpCallReturnsUnsuccessful_ThrowsSiestaHttpException()
+        public async Task SendAsyncNoContent_CurrentCorrelationIdProvidedCallSuccessful_ReturnsCompletedTask()
+        {
+            var httpRequest = new HttpRequestMessage();
+            var request = new TestNoContentSiestaRequest(httpRequest);
+            var correlationId = Guid.NewGuid().ToString();
+            var headerName = "X-Correlation-ID";
+            var client = new MyClient(
+                new HttpClient(this.httpMessageHandlerMock.Object)
+                {
+                    BaseAddress = new Uri("https://base.address.com"),
+                },
+                headerName);
+
+            this.httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(r => r.Headers.GetValues(headerName).First() == correlationId),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                });
+
+            var result = await client.SendAsync(request, correlationId);
+
+            result.IsCompleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public void SendAsyncNoContent_CurrentCorrelationIdBytHeaderNotConfigured_ThrowsConfigurationException()
+        {
+            var clientWithoutHeaderConfigured = new MyClient(new HttpClient());
+
+            Func<Task> action = async () => await clientWithoutHeaderConfigured.SendAsync(
+                new TestNoContentSiestaRequest(),
+                Guid.NewGuid().ToString());
+
+            action
+                .Should()
+                .Throw<SiestaConfigurationException>()
+                .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
+        }
+
+        [Fact]
+        public async Task SendAsyncNoContent_ExpectedHttpCallReturnsUnsuccessful_ThrowsSiestaHttpException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -147,7 +243,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_NoContentExpectedHttpContentNotNull_ThrowsSiestaHttpException()
+        public async Task SendAsyncNoContent_ExpectedHttpContentNotNull_ThrowsSiestaHttpException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -171,7 +267,22 @@ namespace LoopUp.Siesta.Tests
         #region SendAsync patch request
 
         [Fact]
-        public async Task SendAsync_PatchRequestFailsToGetOriginal_ThrowsSiestaHttpException()
+        public void SendAsyncPatchRequest_CurrentCorrelationIdBytHeaderNotConfigured_ThrowsConfigurationException()
+        {
+            var clientWithoutHeaderConfigured = new MyClient(new HttpClient());
+
+            Func<Task> action = async () => await clientWithoutHeaderConfigured.SendAsync(
+                new TestPatchRequest(new TestContent()),
+                Guid.NewGuid().ToString());
+
+            action
+                .Should()
+                .Throw<SiestaConfigurationException>()
+                .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
+        }
+
+        [Fact]
+        public async Task SendAsyncPatchRequest_FailsToGetOriginal_ThrowsSiestaHttpException()
         {
             var getRequest = new HttpRequestMessage();
             var getResponse = new HttpResponseMessage
@@ -190,7 +301,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_PatchRequestGetHttpContentDoesNotMatchExpectedFormat_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetHttpContentDoesNotMatchExpectedFormat_ThrowsSiestaHttpException()
         {
             var getRequest = new HttpRequestMessage();
             var getResponse = new HttpResponseMessage
@@ -210,7 +321,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_PatchRequestGetHttpContentIsNull_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetHttpContentIsNull_ThrowsSiestaHttpException()
         {
             var getRequest = new HttpRequestMessage();
             var getResponse = new HttpResponseMessage
@@ -230,7 +341,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_PatchRequestGetSuccessfulPatchUnsuccessful_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetSuccessfulPatchUnsuccessful_ThrowsSiestaHttpException()
         {
             var getRequest = new HttpRequestMessage();
             var getContent = new TestContent();
@@ -252,7 +363,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_PatchRequestGetSuccessfulPatchContentNotAsExpected_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetSuccessfulPatchContentNotAsExpected_ThrowsSiestaHttpException()
         {
             var getRequest = new HttpRequestMessage();
             var getContent = new TestContent();
@@ -275,7 +386,7 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_PatchRequestGetSuccessfulPatchContentNull_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetSuccessfulPatchContentNull_ThrowsSiestaHttpException()
         {
             var getRequest = new HttpRequestMessage();
             var getContent = new TestContent();
@@ -298,7 +409,58 @@ namespace LoopUp.Siesta.Tests
         }
 
         [Fact]
-        public async Task SendAsync_PatchRequestGetSuccessfulPatchSuccessful_ReturnsResource()
+        public async Task SendAsyncPatchRequest_CurrentCorrelationIdProvidedCallSuccessful_ReturnsResource()
+        {
+            var getRequest = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+            };
+            var getContent = new TestContent(Guid.NewGuid());
+            var patchRequest = new HttpRequestMessage
+            {
+                Method = HttpMethod.Patch,
+            };
+            var patchResponseContent = new TestContent(Guid.NewGuid());
+            var request = new TestPatchRequest(new TestContent(Guid.NewGuid()), getRequestMessage: getRequest, requestMessage: patchRequest);
+            var correlationId = Guid.NewGuid().ToString();
+            var headerName = "X-Correlation-ID";
+            var client = new MyClient(
+                new HttpClient(this.httpMessageHandlerMock.Object)
+                {
+                    BaseAddress = new Uri("https://base.address.com"),
+                },
+                headerName);
+
+            this.httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(r => r.Headers.GetValues(headerName).First() == correlationId && r.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(JsonConvert.SerializeObject(getContent)),
+                });
+            this.httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(r => r.Headers.GetValues(headerName).First() == correlationId && r.Method == HttpMethod.Patch),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(JsonConvert.SerializeObject(patchResponseContent)),
+                });
+
+            var result = await client.SendAsync(request, correlationId);
+
+            result.Should().BeEquivalentTo(patchResponseContent);
+        }
+
+        [Fact]
+        public async Task SendAsyncPatchRequest_GetSuccessfulPatchSuccessful_ReturnsResource()
         {
             var getRequest = new HttpRequestMessage();
             var getContent = new TestContent();
@@ -344,6 +506,19 @@ namespace LoopUp.Siesta.Tests
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent(JsonConvert.SerializeObject(responseContent)),
                 });
+        }
+    }
+
+    internal class MyClient : SiestaClient
+    {
+        public MyClient(HttpClient httpClient)
+            : base(httpClient)
+        {
+        }
+
+        public MyClient(HttpClient httpClient, string correlationIdHeader)
+            : base(httpClient, new SiestaClientConfigurationOptions { RequestHeaderCorrelationIdKey = correlationIdHeader })
+        {
         }
     }
 
@@ -400,6 +575,15 @@ namespace LoopUp.Siesta.Tests
 
     internal class TestContent
     {
+        public TestContent()
+        {
+        }
+
+        public TestContent(Guid id)
+        {
+            this.Id = id;
+        }
+
         public Guid Id { get; set; }
     }
 }

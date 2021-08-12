@@ -196,3 +196,21 @@ It will also handle moving, adding or removing items in anything that implements
 It is recommended that you have a separate project to contain DTOs and Siesta requests that can be deployed as a Nuget package and consumed by any consumers of your API.
 
 Hopefully it can be seen that this gives you a much greater control over how your API is controlled. You can fully unit test your requests and the effort for making calls accurately only has to happen once!
+
+### Using a Siesta client you have been provided with
+
+A Siesta client is perfectly primed to be injected as part of your DI provider at startup.
+
+You can do all configuration of you Siesta client yourself. Simply register it how you would register any other HttpClient[https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0#consumption-patterns].
+
+However there are also some (currently one) extension methods to make registration easier. If there are some common use cases we will look to add these in future. If you think yu have a common usage then please feel free to make a PR!
+
+#### IServiceCollection extensions
+
+You can use the `AddSiestaClientWithCorrelationIdAndSerilog` extension method to add a Siesta client that will log requests with Serilog and that will add a correlation id header to each request.
+
+The current functionality includes:
+- Including a correlation id with each request if one has been set on the request
+- Logs info for every request made with System and machine information
+- Logs all failed requests as an error
+
