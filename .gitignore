@@ -4,7 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # Documentation files
-LoopUp.Siesta.xml
+LoopUp.*.xml
 
 # User-specific files
 *.rsuser

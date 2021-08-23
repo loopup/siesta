@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopUp.Siesta", "LoopUp.Siesta\LoopUp.Siesta.csproj", "{EE64977A-268C-4720-8074-FE1EA378582B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopUp.Siesta.Configuration", "LoopUp.Siesta.Configuration\LoopUp.Siesta.Configuration.csproj", "{EE64977A-268C-4720-8074-FE1EA378582B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopUp.Siesta.Tests", "LoopUp.Siesta.Tests\LoopUp.Siesta.Tests.csproj", "{E4F35ED8-EAA0-448E-932F-5D9C66F2CBB8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopUp.Siesta.Configuration.Tests", "LoopUp.Siesta.Configuration.Tests\LoopUp.Siesta.Configuration.Tests.csproj", "{E4F35ED8-EAA0-448E-932F-5D9C66F2CBB8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7FF177CB-5A14-4ED8-B1A1-F4BF3D5591C8}"
 ProjectSection(SolutionItems) = preProject
@@ -10,7 +10,15 @@ ProjectSection(SolutionItems) = preProject
 	README.md = README.md
 	nuget.config = nuget.config
 	pull_request_template.md = pull_request_template.md
+	LoopUp.Siesta.ruleset = LoopUp.Siesta.ruleset
+	LoopUp.Siesta.Tests.ruleset = LoopUp.Siesta.Tests.ruleset
+	.gitignore = .gitignore
+	.commitlintrc.json = .commitlintrc.json
 EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopUp.Siesta.Client", "LoopUp.Siesta.Client\LoopUp.Siesta.Client.csproj", "{9237E1D2-E9F8-45D6-8A04-A8FABDFAE6A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopUp.Siesta.Client.Tests", "LoopUp.Siesta.Client.Tests\LoopUp.Siesta.Client.Tests.csproj", "{CDDED45D-4162-4105-BBA2-BE27406D8A6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,5 +34,13 @@ Global
 		{E4F35ED8-EAA0-448E-932F-5D9C66F2CBB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4F35ED8-EAA0-448E-932F-5D9C66F2CBB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4F35ED8-EAA0-448E-932F-5D9C66F2CBB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9237E1D2-E9F8-45D6-8A04-A8FABDFAE6A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9237E1D2-E9F8-45D6-8A04-A8FABDFAE6A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9237E1D2-E9F8-45D6-8A04-A8FABDFAE6A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9237E1D2-E9F8-45D6-8A04-A8FABDFAE6A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDDED45D-4162-4105-BBA2-BE27406D8A6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDDED45D-4162-4105-BBA2-BE27406D8A6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDDED45D-4162-4105-BBA2-BE27406D8A6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDDED45D-4162-4105-BBA2-BE27406D8A6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
