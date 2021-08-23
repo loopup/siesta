@@ -46,7 +46,7 @@ namespace LoopUp.Siesta.Client.HttpDelegatingHandlers
 
             this.logger.Information(
                 "Sending {SystemName} request to {Method} {Url}",
-                new object[] { $"{this.systemName}:{Environment.MachineName}", request.Method, request.RequestUri });
+                new object[] { $"{this.systemName}:{Environment.MachineName}", request.Method, request.RequestUri! });
 
             var response = await base.SendAsync(request, cancellationToken);
 

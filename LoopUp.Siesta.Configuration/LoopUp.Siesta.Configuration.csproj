@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Version>0.1.0</Version>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
         <LangVersion>9</LangVersion>
         <Nullable>enable</Nullable>
         <CodeAnalysisRuleSet>..\LoopUp.Siesta.ruleset</CodeAnalysisRuleSet>
@@ -11,6 +11,9 @@
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <DocumentationFile>.\LoopUp.Siesta.Configuration.xml</DocumentationFile>
         <RootNamespace>LoopUp.Siesta.Configuration</RootNamespace>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>Alex Goodsell; LoopUp</Authors>
+        <PackageProjectUrl>https://github.com/loopup/siesta/pull/4</PackageProjectUrl>
     </PropertyGroup>
 
     <ItemGroup>

@@ -80,8 +80,8 @@ namespace LoopUp.Siesta.Configuration.Patch
                     // Here the property is a List
                     // In this situation we don't want to replace the whole list so we use this special method
                     PopulatePatchForList(
-                        originalObject != null ? (IList<object>)property.GetValue(originalObject) : null,
-                        modifiedObject != null ? (IList<object>)property.GetValue(modifiedObject) : null,
+                        originalObject != null ? (IList<object>)property.GetValue(originalObject) ! : null,
+                        modifiedObject != null ? (IList<object>)property.GetValue(modifiedObject) ! : null,
                         patchDocument,
                         $"{path}/{property.Name}");
                 }

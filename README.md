@@ -4,7 +4,9 @@ Siesta is a generic C# REST client that allows you to more reliably consume a RE
 
 ## Technical overview
 
-Siesta is a .netstandard2.1 Nuget package that includes classes for the configuration of requests and an HTTP client to consume Siesta configures APIs.
+Siesta is 2 .netstandard2.1 NuGet packages that include classes for the configuration of requests and an HTTP client to consume Siesta configures APIs.
+
+Siesta is split into a `Configuration` NuGet package, which includes everything you need to configure your requests and API, and a `CLient` package which includes what is needed to make calls to a Siesta configured API.
 
 ## Usage
 

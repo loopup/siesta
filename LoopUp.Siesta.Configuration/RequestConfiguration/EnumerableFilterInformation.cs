@@ -32,9 +32,9 @@ namespace LoopUp.Siesta.Configuration.RequestConfiguration
             foreach (var property in properties)
             {
                 var value = property.GetValue(this);
-                if (value != null)
+                if (value?.ToString() is not null)
                 {
-                    dictionary.Add(property.Name, value.ToString());
+                    dictionary.Add(property.Name, value.ToString() !);
                 }
             }
 

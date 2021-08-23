@@ -36,7 +36,7 @@ namespace LoopUp.Siesta.Configuration.Exceptions
                 throw new ArgumentNullException(nameof(info));
             }
 
-            this.configurationIssue = (ConfigurationIssue)info.GetValue("ConfigurationIssue", typeof(ConfigurationIssue));
+            this.configurationIssue = (ConfigurationIssue)info.GetValue("ConfigurationIssue", typeof(ConfigurationIssue)) !;
         }
 
         /// <summary>

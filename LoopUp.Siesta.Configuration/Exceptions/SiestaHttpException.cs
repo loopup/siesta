@@ -46,13 +46,13 @@ namespace LoopUp.Siesta.Configuration.Exceptions
             : base(info, context)
         {
             this.failedHttpResponseMessage =
-                (HttpResponseMessage)info.GetValue("FailedHttpResponseMessage", typeof(HttpResponseMessage));
+                (HttpResponseMessage)info.GetValue("FailedHttpResponseMessage", typeof(HttpResponseMessage)) !;
         }
 
         /// <summary>
         /// Gets the failed HTTP response.
         /// </summary>
-        public HttpResponseMessage? FailedHttpResponseMessage => this.failedHttpResponseMessage;
+        public HttpResponseMessage FailedHttpResponseMessage => this.failedHttpResponseMessage;
 
         /// <inheritdoc />
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
