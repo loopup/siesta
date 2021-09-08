@@ -1,0 +1,92 @@
+resources:
+  repositories:
+    - repository: AzurePipelines
+      type: github
+      endpoint: loopup
+      name: loopup/azure-pipelines
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+pr: none
+pool:
+  vmImage: 'windows-2019'
+
+parameters:
+- name: forceContinuation
+  displayName: Force a continuation to release? (This should only be used in an emergency)
+  type: boolean
+  default: false
+
+stages:
+  - stage: 'BuildLintTest'
+    displayName: 'Build, lint & test'
+    jobs:
+      - template: ./lint-commit-messages.yml@AzurePipelines
+        parameters:
+          lintCommitFrom: '65025b25a8271593464a6317648ad7925958513a'
+
+      - template: ./lint-and-test.yml@AzurePipelines
+        parameters:
+          testProjects:
+            [
+                "./Siesta.Client.Tests/Siesta.Client.Tests.csproj",
+                "./Siesta.Configuration.Tests/Siesta.Configuration.Tests.csproj",
+            ]
+          sonarcloudProjectKey: 'loopup_siesta'
+
+      - template: ./generate-prerelease-nuget-package-artifacts.yml@AzurePipelines
+        parameters:
+          artifactName: PrereleasePackages
+          pathToProjectContainingVersion: ./Siesta.Client/Siesta.Client.csproj
+
+      - template: ./generate-nuget-package-artifacts.yml@AzurePipelines
+        parameters:
+          artifactName: 'ProductionPackages'
+
+  - stage: 'IncrementVersion'
+    displayName: 'Increment version'
+    dependsOn: 'BuildLintTest'
+    condition: succeeded()
+    jobs:
+      - template: ./increment-version.yml@AzurePipelines
+        parameters:
+          releaseBranch: main
+
+  - template: ./v2/stages/evaluate-cicd-continuation.yml@AzurePipelines
+    parameters:
+      stageName: 'EvaluateCICDContinuation'
+      dependsOn: 'BuildLintTest'
+      branchToContinue: 'main'
+      commitFormatToContinue: 'chore(release):'
+      forceContinuation: ${{ parameters.forceContinuation }}
+
+  - stage: 'ReleasePrereleasePackages'
+    displayName: 'Release prerelease packages'
+    dependsOn: 'EvaluateCICDContinuation'
+    jobs:
+      - deployment: 'PrereleasePackages'
+        environment: 'Prerelease'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: NuGetCommand@2
+                  inputs:
+                    command: custom
+                    arguments: push $(Pipeline.Workspace)/PrereleasePackages/**/*.nupkg -ApiKey $(NUGET_API_KEY) -Source https://api.nuget.org/v3/index.json
+                    allowPackageConflicts: false
+
+  - stage: 'ReleaseProductionPackages'
+    displayName: 'Release production packages'
+    dependsOn: 'EvaluateCICDContinuation'
+    jobs:
+      - deployment: 'PrereleasePackages'
+        environment: 'Release'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: NuGetCommand@2
+                  inputs:
+                    command: custom
+                    arguments: push $(Pipeline.Workspace)/ProductionPackages/**/*.nupkg -ApiKey $(NUGET_API_KEY) -Source https://api.nuget.org/v3/index.json
+                    allowPackageConflicts: false
