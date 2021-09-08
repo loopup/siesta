@@ -1,0 +1,298 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Siesta.Configuration</name>
+    </assembly>
+    <members>
+        <member name="T:Siesta.Configuration.Exceptions.ConfigurationIssue">
+            <summary>
+            Enumeration of possible Siesta configuration issues.
+            </summary>
+        </member>
+        <member name="F:Siesta.Configuration.Exceptions.ConfigurationIssue.CorrelationIdHeaderNotConfigured">
+            <summary>
+            An attempt was made to use a Correlation Id, but this has not been configured in the client.
+            </summary>
+        </member>
+        <member name="T:Siesta.Configuration.Exceptions.SiestaConfigurationException">
+            <summary>
+            Exception thrown when the request is not implemented for a DTO.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaConfigurationException.#ctor(Siesta.Configuration.Exceptions.ConfigurationIssue)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaConfigurationException"/> class.
+            </summary>
+            <param name="issue">The underlying configuration issue.</param>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaConfigurationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaConfigurationException"/> class.
+            </summary>
+            <param name="info">Instance of <see cref="T:System.Runtime.Serialization.SerializationInfo"/>.</param>
+            <param name="context">Instance of <see cref="T:System.Runtime.Serialization.StreamingContext"/>.</param>
+        </member>
+        <member name="P:Siesta.Configuration.Exceptions.SiestaConfigurationException.ConfigurationIssue">
+            <summary>
+            Gets the underlying configuration issue.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaConfigurationException.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <inheritdoc />
+        </member>
+        <member name="T:Siesta.Configuration.Exceptions.SiestaHttpException">
+            <summary>
+            An exception thrown by Siesta client when there is an issue with an Http call.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaHttpException.#ctor(System.String,System.Net.Http.HttpResponseMessage)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="failedHttpResponseMessage">The failed HTTP response.</param>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaHttpException.#ctor(System.String,System.Exception,System.Net.Http.HttpResponseMessage)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="innerException">The inner exception.</param>
+            <param name="failedHttpResponseMessage">The failed HTTP response.</param>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaHttpException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/> class.
+            </summary>
+            <param name="info">Instance of <see cref="T:System.Runtime.Serialization.SerializationInfo"/>.</param>
+            <param name="context">Instance of <see cref="T:System.Runtime.Serialization.StreamingContext"/>.</param>
+        </member>
+        <member name="P:Siesta.Configuration.Exceptions.SiestaHttpException.FailedHttpResponseMessage">
+            <summary>
+            Gets the failed HTTP response.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaHttpException.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <inheritdoc />
+        </member>
+        <member name="T:Siesta.Configuration.Exceptions.SiestaRequestNotImplementedException">
+            <summary>
+            Exception thrown when the request is not implemented for a DTO.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaRequestNotImplementedException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaRequestNotImplementedException"/> class.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaRequestNotImplementedException.#ctor(System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaRequestNotImplementedException"/> class.
+            </summary>
+            <param name="innerException">The inner exception.</param>
+        </member>
+        <member name="M:Siesta.Configuration.Exceptions.SiestaRequestNotImplementedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Exceptions.SiestaRequestNotImplementedException"/> class.
+            </summary>
+            <param name="info">Instance of <see cref="T:System.Runtime.Serialization.SerializationInfo"/>.</param>
+            <param name="context">Instance of <see cref="T:System.Runtime.Serialization.StreamingContext"/>.</param>
+        </member>
+        <member name="T:Siesta.Configuration.Extensions.TypeExtensions">
+            <summary>
+            Extension method for <see cref="T:System.Type"/> class.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Extensions.TypeExtensions.IsComplexObject(System.Type)">
+            <summary>
+            Method to determine if the Type is a complex type, that is something other than a primitive, built in system type or enumerable.
+            We can think of this as anything that is a class with properties.
+            </summary>
+            <param name="type">The type to test for complexity.</param>
+            <returns>Boolean reflecting type complexity.</returns>
+        </member>
+        <member name="M:Siesta.Configuration.Extensions.TypeExtensions.IsAListOfT(System.Type)">
+            <summary>
+            Used to determine if a type is an enumerable.
+            </summary>
+            <param name="type">The type to test.</param>
+            <returns>Boolean reflecting if type enumerable.</returns>
+        </member>
+        <member name="T:Siesta.Configuration.Patch.JsonPatchDocumentHelpers">
+            <summary>
+            Helper class for making and working with JsonPatchDocuments.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.Patch.JsonPatchDocumentHelpers.GeneratePatchDocument``1(``0,``0)">
+            <summary>
+            Generate a JsonPatchDocument through the comparison of two versions of the same class.
+            </summary>
+            <param name="original">Original version of the class.</param>
+            <param name="modified">New version of the class.</param>
+            <typeparam name="T">The type of the class.</typeparam>
+            <returns>A JsonPatchDocument for the two objects.</returns>
+        </member>
+        <member name="M:Siesta.Configuration.Patch.JsonPatchDocumentHelpers.PopulatePatchForObject``1(``0,``0,Microsoft.AspNetCore.JsonPatch.JsonPatchDocument,System.String)">
+            <summary>
+            Recursive method to populate the Patch document for 2 objects.
+            </summary>
+            <param name="originalObject">The original version of the object.</param>
+            <param name="modifiedObject">The modified version of the object.</param>
+            <param name="patchDocument">The PATCH document to populate.</param>
+            <param name="path">The path to use for PATCH document paths.</param>
+            <typeparam name="T">The object type.</typeparam>
+        </member>
+        <member name="M:Siesta.Configuration.Patch.JsonPatchDocumentHelpers.PopulatePatchForList``1(System.Collections.Generic.IList{``0},System.Collections.Generic.IList{``0},Microsoft.AspNetCore.JsonPatch.JsonPatchDocument,System.String)">
+            <summary>
+            Populate the patch document for a List.
+            </summary>
+            <param name="originalList">The original list.</param>
+            <param name="modifiedList">The new version of the list.</param>
+            <param name="patchDocument">The patch document to populate.</param>
+            <param name="path">The path to use as the base for these objects.</param>
+            <typeparam name="T">The type of the List.</typeparam>
+        </member>
+        <member name="T:Siesta.Configuration.RequestConfiguration.EnumerableFilterInformation">
+            <summary>
+            Class that represents filter information for enumerable endpoints.
+            This includes the required page number and size.
+            </summary>
+        </member>
+        <member name="P:Siesta.Configuration.RequestConfiguration.EnumerableFilterInformation.PageNumber">
+            <summary>
+            Gets or sets the number of the page of Enumerable data to return.
+            </summary>
+        </member>
+        <member name="P:Siesta.Configuration.RequestConfiguration.EnumerableFilterInformation.PageSize">
+            <summary>
+            Gets or sets the page size to partition the Enumerable data into.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.RequestConfiguration.EnumerableFilterInformation.AsQueryDictionary">
+            <summary>
+            Takes the filter information and transforms it into a dictionary to be used for HTTP query parameters.
+            </summary>
+            <returns>Dictionary with property name value pairs.</returns>
+        </member>
+        <member name="T:Siesta.Configuration.RequestConfiguration.SiestaPatchRequest`1">
+            <summary>
+            Base class for a Patch request.
+            </summary>
+            /// <typeparam name="T">The expected data return type.</typeparam>
+        </member>
+        <member name="M:Siesta.Configuration.RequestConfiguration.SiestaPatchRequest`1.#ctor(`0)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.RequestConfiguration.SiestaPatchRequest`1"/> class.
+            </summary>
+            <param name="modifiedResource">The modified version of the resource to persist through this request.</param>
+        </member>
+        <member name="P:Siesta.Configuration.RequestConfiguration.SiestaPatchRequest`1.ModifiedResource">
+            <summary>
+            Gets or sets the modified resource related to this request.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.RequestConfiguration.SiestaPatchRequest`1.GenerateGetRequestMessage">
+            <summary>
+            Method that will generate the necessary <see cref="T:System.Net.Http.HttpRequestMessage"/> to get the current version of the resource.
+            You must override this method in order to make a request using this request model.
+            </summary>
+            <returns>The <see cref="T:System.Net.Http.HttpRequestMessage"/>.</returns>
+        </member>
+        <member name="M:Siesta.Configuration.RequestConfiguration.SiestaPatchRequest`1.GeneratePatchRequestMessage(`0)">
+            <summary>
+            Method that will generate the necessary <see cref="T:System.Net.Http.HttpRequestMessage"/> from the request model.
+            You must override this method in order to make a request using this request model.
+            </summary>
+            <param name="originalResource">The original version of the resource. If used in conjunction with the Siesta client this will be provided.</param>
+            <returns>The <see cref="T:System.Net.Http.HttpRequestMessage"/>.</returns>
+        </member>
+        <member name="T:Siesta.Configuration.RequestConfiguration.SiestaRequest">
+            <summary>
+            Base class for any request that expects no data to be returned.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.RequestConfiguration.SiestaRequest.GenerateRequestMessage">
+            <summary>
+            Method that will generate the necessary <see cref="T:System.Net.Http.HttpRequestMessage"/> from the request model.
+            You must override this method in order to make a request using this request model.
+            </summary>
+            <returns>The <see cref="T:System.Net.Http.HttpRequestMessage"/>.</returns>
+        </member>
+        <member name="T:Siesta.Configuration.RequestConfiguration.SiestaRequest`1">
+            <summary>
+            Base class for any request that expects data to be returned.
+            </summary>
+            <typeparam name="T">The expected data return type.</typeparam>
+        </member>
+        <member name="M:Siesta.Configuration.RequestConfiguration.SiestaRequest`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.RequestConfiguration.SiestaRequest`1"/> class.
+            </summary>
+        </member>
+        <member name="M:Siesta.Configuration.RequestConfiguration.SiestaRequest`1.GenerateRequestMessage">
+            <summary>
+            Method that will generate the necessary <see cref="T:System.Net.Http.HttpRequestMessage"/> from the request model.
+            You must override this method in order to make a request using this request model.
+            </summary>
+            <returns>The <see cref="T:System.Net.Http.HttpRequestMessage"/>.</returns>
+        </member>
+        <member name="T:Siesta.Configuration.Serialization.DeserializedPagedList`1">
+            <summary>
+            Extension of Static Paged List used for deserialization of SerializablePagedList.
+            This class should always be used when deserializing <see cref="T:Siesta.Configuration.Serialization.SerializablePagedList`1"/> to preserve it's contents and metadata.
+            </summary>
+            <typeparam name="T">Type of the entity stored in set.</typeparam>
+        </member>
+        <member name="M:Siesta.Configuration.Serialization.DeserializedPagedList`1.#ctor(System.Linq.IQueryable{`0},System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Serialization.DeserializedPagedList`1"/> class.
+            </summary>
+            <param name="items"> IQueryable set of entities that are used to populate list during serialization.</param>
+            <param name="pageNumber"> Number of page on which data will be displayed.</param>
+            <param name="pageSize"> Maximum size of the set.</param>
+            <param name="totalItemCount">Size of the superset that will be paginated.</param>
+        </member>
+        <member name="M:Siesta.Configuration.Serialization.DeserializedPagedList`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Serialization.DeserializedPagedList`1"/> class.
+            </summary>
+            <param name="items">IEnumerable set of entities that are used to populate list during serialization.</param>
+            <param name="pageNumber">Number of page on which data will be displayed.</param>
+            <param name="pageSize">Maximum size of the set.</param>
+            <param name="totalItemCount">Size of the superset that will be paginated.</param>
+        </member>
+        <member name="P:Siesta.Configuration.Serialization.DeserializedPagedList`1.Items">
+            <summary>
+            Gets dataset of the list that's used for serialization.
+            </summary>
+        </member>
+        <member name="T:Siesta.Configuration.Serialization.SerializablePagedList`1">
+            <summary>
+            Extension of PagedList that allows serialization of entity set while preserving it's metadata.
+            Use <see cref="T:Siesta.Configuration.Serialization.DeserializedPagedList`1"/> to deserialize this class.
+            </summary>
+            <typeparam name="T">Type of the entity stored in set.</typeparam>
+        </member>
+        <member name="M:Siesta.Configuration.Serialization.SerializablePagedList`1.#ctor(System.Linq.IQueryable{`0},System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Serialization.SerializablePagedList`1"/> class.
+            </summary>
+            <param name="items">IQueryable set of entities.</param>
+            <param name="pageNumber">Number of page on which data will be displayed.</param>
+            <param name="pageSize">Maximum size of the set.</param>
+        </member>
+        <member name="M:Siesta.Configuration.Serialization.SerializablePagedList`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Configuration.Serialization.SerializablePagedList`1"/> class.
+            </summary>
+            <param name="items">IEnumerable set of entities.</param>
+            <param name="pageNumber">Number of page on which data will be displayed.</param>
+            <param name="pageSize">Maximum size of the set.</param>
+        </member>
+        <member name="P:Siesta.Configuration.Serialization.SerializablePagedList`1.Items">
+            <summary>
+            Gets dataset of the list that's used for serialization.
+            </summary>
+        </member>
+    </members>
+</doc>

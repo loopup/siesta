@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Siesta.Client</name>
+    </assembly>
+    <members>
+        <member name="T:Siesta.Client.HttpDelegatingHandlers.CorrelationIdHandler">
+            <summary>
+            A DelegatingHandler that will add a correlation id header to every request if one is not present.
+            </summary>
+        </member>
+        <member name="M:Siesta.Client.HttpDelegatingHandlers.CorrelationIdHandler.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Client.HttpDelegatingHandlers.CorrelationIdHandler"/> class.
+            </summary>
+            <param name="correlationIdHeader">The header to look for and or add the correlation ID to.".</param>
+        </member>
+        <member name="M:Siesta.Client.HttpDelegatingHandlers.CorrelationIdHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Siesta.Client.HttpDelegatingHandlers.SerilogHandler">
+            <summary>
+            DelegatingHandler that will add Serilog based logging to an HtpClient.
+            </summary>
+        </member>
+        <member name="M:Siesta.Client.HttpDelegatingHandlers.SerilogHandler.#ctor(Serilog.ILogger,System.String,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Client.HttpDelegatingHandlers.SerilogHandler"/> class.
+            </summary>
+            <param name="logger">Instance of Serilog logger.</param>
+            <param name="systemName">Name of the current system.</param>
+            <param name="loggerCorrelationIdName">(Optional) Key to use for correlation ID if it is present. Default is "CorrelationId".</param>
+            <param name="requestHeaderCorrelationIdKey">(Optional) Key in request headers to look for a correlation ID. Default is "X-Correlation-ID".</param>
+        </member>
+        <member name="M:Siesta.Client.HttpDelegatingHandlers.SerilogHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Siesta.Client.ISiestaClient">
+            <summary>
+            Public contract of the <see cref="T:Siesta.Client.ISiestaClient"/>.
+            This can be used to communicate with an API built using Siesta.
+            </summary>
+        </member>
+        <member name="M:Siesta.Client.ISiestaClient.SendAsync(Siesta.Configuration.RequestConfiguration.SiestaRequest)">
+            <summary>
+            Sends a request that expects no data in return.
+            </summary>
+            <param name="siestaRequest">The request to send.</param>
+            <returns>A completed task.</returns>
+            <throws><see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/>.</throws>
+        </member>
+        <member name="M:Siesta.Client.ISiestaClient.SendAsync(Siesta.Configuration.RequestConfiguration.SiestaRequest,System.String)">
+            <summary>
+            Sends a request that expects no data in return.
+            </summary>
+            <param name="siestaRequest">The request to send.</param>
+            <param name="currentCorrelationId">If you are using a correlation ID and you are already part of a call you can pass this here.</param>
+            <returns>A completed task.</returns>
+            <throws><see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/>.</throws>
+        </member>
+        <member name="M:Siesta.Client.ISiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaRequest{``0})">
+            <summary>
+            Sends a request that expects data in return.
+            </summary>
+            <param name="siestaRequest">The request to send.</param>
+            <typeparam name="T">The expected return type for data.</typeparam>
+            <returns>The retrieved, updated or created data.</returns>
+            <throws><see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/>.</throws>
+        </member>
+        <member name="M:Siesta.Client.ISiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaRequest{``0},System.String)">
+            <summary>
+            Sends a request that expects data in return.
+            </summary>
+            <param name="siestaRequest">The request to send.</param>
+            <param name="currentCorrelationId">If you are using a correlation ID and you are already part of a call you can pass this here.</param>
+            <typeparam name="T">The expected return type for data.</typeparam>
+            <returns>The retrieved, updated or created data.</returns>
+            <throws><see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/>.</throws>
+        </member>
+        <member name="M:Siesta.Client.ISiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaPatchRequest{``0})">
+            <summary>
+            Sends a PATCH request that expected data in return.
+            </summary>
+            <param name="siestaPatchRequest">The request to send.</param>
+            <typeparam name="T">The expected return type and the type of the resource being patched.</typeparam>
+            <returns>The updated resource.</returns>
+            <throws><see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/>.</throws>
+        </member>
+        <member name="M:Siesta.Client.ISiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaPatchRequest{``0},System.String)">
+            <summary>
+            Sends a PATCH request that expected data in return.
+            </summary>
+            <param name="siestaPatchRequest">The request to send.</param>
+            <param name="currentCorrelationId">If you are using a correlation ID and you are already part of a call you can pass this here.</param>
+            <typeparam name="T">The expected return type and the type of the resource being patched.</typeparam>
+            <returns>The updated resource.</returns>
+            <throws><see cref="T:Siesta.Configuration.Exceptions.SiestaHttpException"/>.</throws>
+        </member>
+        <member name="T:Siesta.Client.ServiceCollectionExtensions.AddSiestaClientExtensions">
+            <summary>
+            Extension methods for <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> that can be used to add a Siesta client.
+            </summary>
+        </member>
+        <member name="M:Siesta.Client.ServiceCollectionExtensions.AddSiestaClientExtensions.AddSiestaClientWithCorrelationIdAndSerilog``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Uri,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Net.Http.Headers.AuthenticationHeaderValue,System.String,System.String)">
+            <summary>
+            Add a Siesta Client of type T. This will include the use of Serilog logging and a correlationId.
+            </summary>
+            <param name="services">The IServiceCollection this.</param>
+            <param name="baseAddress">Base address Uri for the Siesta client.</param>
+            <param name="systemName">The name of the calling system.</param>
+            <param name="defaultHeaders">Any default headers you which to apply to the client.</param>
+            <param name="authenticationHeaderValue">Optional value for the authentication header.</param>
+            <param name="loggerCorrelationIdKey">Optional key for the logging correlation Id.</param>
+            <param name="requestHeaderCorrelationIdKey">Optional key for where to find the correlation id in the request.</param>
+            <typeparam name="T">The type of Siesta Client to add.</typeparam>
+            <returns>The IServiceCollection.</returns>
+        </member>
+        <member name="T:Siesta.Client.SiestaClient">
+            <summary>
+            The <see cref="T:Siesta.Client.SiestaClient"/> that can be used to communicate with an API built using Siesta.
+            </summary>
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.#ctor(System.Net.Http.HttpClient)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Client.SiestaClient"/> class.
+            </summary>
+            <param name="httpClient">A pre-configured <see cref="T:System.Net.Http.HttpClient"/>.</param>
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.#ctor(System.Net.Http.HttpClient,Siesta.Client.SiestaClientConfigurationOptions)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Client.SiestaClient"/> class.
+            </summary>
+            <param name="httpClient">A pre-configured <see cref="T:System.Net.Http.HttpClient"/>.</param>
+            <param name="siestaClientConfigurationOptions">Configuration options for a <see cref="T:Siesta.Client.SiestaClient"/>.</param>
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.SendAsync(Siesta.Configuration.RequestConfiguration.SiestaRequest)">
+            <inheritdoc />
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.SendAsync(Siesta.Configuration.RequestConfiguration.SiestaRequest,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaRequest{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaRequest{``0},System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaPatchRequest{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:Siesta.Client.SiestaClient.SendAsync``1(Siesta.Configuration.RequestConfiguration.SiestaPatchRequest{``0},System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Siesta.Client.SiestaClientConfigurationOptions">
+            <summary>
+            Class representing the configuration options for a <see cref="T:Siesta.Client.SiestaClient"/>.
+            </summary>
+        </member>
+        <member name="P:Siesta.Client.SiestaClientConfigurationOptions.RequestHeaderCorrelationIdKey">
+            <summary>
+            Gets or sets the RequestHeaderCorrelationIdKey.
+            </summary>
+        </member>
+    </members>
+</doc>
