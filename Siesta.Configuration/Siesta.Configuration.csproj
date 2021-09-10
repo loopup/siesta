@@ -12,8 +12,10 @@
         <DocumentationFile>.\Siesta.Configuration.xml</DocumentationFile>
         <RootNamespace>Siesta.Configuration</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Authors>Alex Goodsell; LoopUp</Authors>
-        <PackageProjectUrl>https://github.com/loopup/siesta/pull/4</PackageProjectUrl>
+        <Authors>Alex Goodsell; agoodsell5; LoopUp</Authors>
+        <PackageProjectUrl>https://github.com/loopup/siesta</PackageProjectUrl>
+        <PackageLicenseFile>MITLicense.txt</PackageLicenseFile>
+        <Description>Configure your API with Siesta to make consumers lives easy.</Description>
     </PropertyGroup>
 
     <ItemGroup>
@@ -37,6 +39,10 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="X.PagedList" Version="8.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="..\MITLicense.txt" Pack="true" PackagePath=""/>
     </ItemGroup>
 
 </Project>

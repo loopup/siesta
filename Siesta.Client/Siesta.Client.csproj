@@ -12,8 +12,10 @@
         <DocumentationFile>.\Siesta.Client.xml</DocumentationFile>
         <RootNamespace>Siesta.Client</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Authors>Alex Goodsell; LoopUp</Authors>
-        <PackageProjectUrl>https://github.com/loopup/siesta/pull/4</PackageProjectUrl>
+        <Authors>Alex Goodsell; agoodsell5; LoopUp</Authors>
+        <PackageProjectUrl>https://github.com/loopup/siesta</PackageProjectUrl>
+        <PackageLicenseFile>MITLicense.txt</PackageLicenseFile>
+        <Description>Consume a Siesta configured API with the Siesta Client.</Description>
     </PropertyGroup>
 
     <ItemGroup>
@@ -41,6 +43,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Siesta.Configuration\Siesta.Configuration.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="..\MITLicense.txt" Pack="true" PackagePath=""/>
     </ItemGroup>
 
 </Project>
