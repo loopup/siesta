@@ -52,13 +52,23 @@ namespace Siesta.Client.HttpDelegatingHandlers
 
             if (!response.IsSuccessStatusCode)
             {
-                this.logger.Error(
+                #if NETSTANDARD2_0
+                    this.logger.Error(
+                        "Request from {SystemName} to {Method} {Url} failed with code {Code} and response body {Response}",
+                        $"{this.systemName}:{Environment.MachineName}",
+                        request.Method,
+                        request.RequestUri,
+                        response.StatusCode,
+                        await response.Content.ReadAsStringAsync());
+                #else
+                    this.logger.Error(
                     "Request from {SystemName} to {Method} {Url} failed with code {Code} and response body {Response}",
                     $"{this.systemName}:{Environment.MachineName}",
                     request.Method,
                     request.RequestUri,
                     response.StatusCode,
-                    await response.Content.ReadAsStringAsync());
+                    await response.Content.ReadAsStringAsync(cancellationToken));
+                #endif
             }
 
             disposableContext?.Dispose();

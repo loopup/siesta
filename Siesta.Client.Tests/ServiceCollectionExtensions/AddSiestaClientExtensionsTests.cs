@@ -36,9 +36,8 @@ namespace Siesta.Client.Tests.ServiceCollectionExtensions
                 systemName,
                 loggerCorrelationIdKey,
                 requestHeaderCorrelationIdKey);
-            this.serviceCollection.AddSiestaClientWithCorrelationIdAndSerilog<TestClient>(
-                new Uri("https://base.address.com"),
-                systemName);
+            this.serviceCollection.AddSiestaClient<TestClient>(
+                new CorrelationAndLoggingConfigurationOptions(new Uri("https://base.address.com"), systemName));
 
             var serviceProvider = this.serviceCollection.BuildServiceProvider();
 
@@ -52,9 +51,8 @@ namespace Siesta.Client.Tests.ServiceCollectionExtensions
             var systemName = "System name";
             var requestHeaderCorrelationIdKey = "correlationId";
             var expectedHandler = new CorrelationIdHandler(requestHeaderCorrelationIdKey);
-            this.serviceCollection.AddSiestaClientWithCorrelationIdAndSerilog<TestClient>(
-                new Uri("https://base.address.com"),
-                systemName);
+            this.serviceCollection.AddSiestaClient<TestClient>(
+                new CorrelationAndLoggingConfigurationOptions(new Uri("https://base.address.com"), systemName));
 
             var serviceProvider = this.serviceCollection.BuildServiceProvider();
 
@@ -71,9 +69,8 @@ namespace Siesta.Client.Tests.ServiceCollectionExtensions
                 systemName,
                 "CorrelationId",
                 "X-Correlation-ID");
-            this.serviceCollection.AddSiestaClientWithCorrelationIdAndSerilog<TestClient>(
-                new Uri("https://base.address.com"),
-                systemName);
+            this.serviceCollection.AddSiestaClient<TestClient>(
+                new CorrelationAndLoggingConfigurationOptions(new Uri("https://base.address.com"), systemName));
 
             var serviceProvider = this.serviceCollection.BuildServiceProvider();
 
@@ -90,9 +87,8 @@ namespace Siesta.Client.Tests.ServiceCollectionExtensions
                 BaseAddress = baseAddress,
             };
 
-            this.serviceCollection.AddSiestaClientWithCorrelationIdAndSerilog<TestClient>(
-                baseAddress,
-                "System name");
+            this.serviceCollection.AddSiestaClient<TestClient>(
+                new CorrelationAndLoggingConfigurationOptions(baseAddress, "System name"));
 
             var serviceProvider = this.serviceCollection.BuildServiceProvider();
 
@@ -119,10 +115,8 @@ namespace Siesta.Client.Tests.ServiceCollectionExtensions
                 expectedClient.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
 
-            this.serviceCollection.AddSiestaClientWithCorrelationIdAndSerilog<TestClient>(
-                baseAddress,
-                "System name",
-                defaultHeaders);
+            this.serviceCollection.AddSiestaClient<TestClient>(
+                new CorrelationAndLoggingConfigurationOptions(baseAddress, "System name", defaultHeaders));
 
             var serviceProvider = this.serviceCollection.BuildServiceProvider();
 
@@ -141,10 +135,8 @@ namespace Siesta.Client.Tests.ServiceCollectionExtensions
             };
             expectedClient.DefaultRequestHeaders.Authorization = authenticationHeaderValue;
 
-            this.serviceCollection.AddSiestaClientWithCorrelationIdAndSerilog<TestClient>(
-                baseAddress,
-                "System name",
-                authenticationHeaderValue: authenticationHeaderValue);
+            this.serviceCollection.AddSiestaClient<TestClient>(
+                new CorrelationAndLoggingConfigurationOptions(baseAddress, "System name", authenticationHeaderValue: authenticationHeaderValue));
 
             var serviceProvider = this.serviceCollection.BuildServiceProvider();
 

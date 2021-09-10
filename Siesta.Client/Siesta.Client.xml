@@ -101,19 +101,60 @@
             Extension methods for <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> that can be used to add a Siesta client.
             </summary>
         </member>
-        <member name="M:Siesta.Client.ServiceCollectionExtensions.AddSiestaClientExtensions.AddSiestaClientWithCorrelationIdAndSerilog``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Uri,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Net.Http.Headers.AuthenticationHeaderValue,System.String,System.String)">
+        <member name="M:Siesta.Client.ServiceCollectionExtensions.AddSiestaClientExtensions.AddSiestaClient``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions)">
             <summary>
             Add a Siesta Client of type T. This will include the use of Serilog logging and a correlationId.
             </summary>
             <param name="services">The IServiceCollection this.</param>
-            <param name="baseAddress">Base address Uri for the Siesta client.</param>
-            <param name="systemName">The name of the calling system.</param>
-            <param name="defaultHeaders">Any default headers you which to apply to the client.</param>
-            <param name="authenticationHeaderValue">Optional value for the authentication header.</param>
-            <param name="loggerCorrelationIdKey">Optional key for the logging correlation Id.</param>
-            <param name="requestHeaderCorrelationIdKey">Optional key for where to find the correlation id in the request.</param>
+            <param name="correlationAndLoggingConfigurationOptions">Configuration options for convenient client configuration.</param>
             <typeparam name="T">The type of Siesta Client to add.</typeparam>
             <returns>The IServiceCollection.</returns>
+        </member>
+        <member name="T:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions">
+            <summary>
+            Configuration class for convenience method to setup a client with Correlation Id and Serilog.
+            </summary>
+        </member>
+        <member name="M:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions.#ctor(System.Uri,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Net.Http.Headers.AuthenticationHeaderValue,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions"/> class.
+            </summary>
+            <param name="baseAddress">Base address for the client.</param>
+            <param name="systemName">System name for the client.</param>
+            <param name="defaultHeaders">(Optional) Default headers to add to client requests.</param>
+            <param name="authenticationHeaderValue">(Optional) Authentication header value to add to all requests.</param>
+            <param name="loggerCorrelationId">(Optional) Correlation ID key value for Serilog.</param>
+            <param name="requestHeaderCorrelationIdKey">Correlation ID request header key.</param>
+        </member>
+        <member name="P:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions.BaseAddress">
+            <summary>
+            Gets or sets a value for the Base Address of the client.
+            </summary>
+        </member>
+        <member name="P:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions.SystemName">
+            <summary>
+            Gets or sets a value for the System name the client represents.
+            </summary>
+        </member>
+        <member name="P:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions.DefaultHeaders">
+            <summary>
+            Gets or sets the default headers to add to each request.
+            </summary>
+        </member>
+        <member name="P:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions.AuthenticationHeaderValue">
+            <summary>
+            Gets or sets the authentication header value to add to each request.
+            </summary>
+        </member>
+        <member name="P:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions.LoggerCorrelationId">
+            <summary>
+            Gets or sets the correlation id key to use for Serilog.
+            </summary>
+        </member>
+        <member name="P:Siesta.Client.ServiceCollectionExtensions.CorrelationAndLoggingConfigurationOptions.RequestHeaderCorrelationIdKey">
+            <summary>
+            Gets or sets the correlation id header key to use for requests.
+            </summary>
         </member>
         <member name="T:Siesta.Client.SiestaClient">
             <summary>
