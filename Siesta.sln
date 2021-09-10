@@ -15,6 +15,7 @@ ProjectSection(SolutionItems) = preProject
 	.gitignore = .gitignore
 	.commitlintrc.json = .commitlintrc.json
 	azure-build-pipeline.yaml = azure-build-pipeline.yaml
+	MITLicense.txt = MITLicense.txt
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Siesta.Client", "Siesta.Client\Siesta.Client.csproj", "{9237E1D2-E9F8-45D6-8A04-A8FABDFAE6A0}"
