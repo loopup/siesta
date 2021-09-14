@@ -20,7 +20,7 @@ Here we show some example controllers and how to configure requests.
 
 ###Get specific resource
 
-This endpoint returns a `CustomerDto`.
+This endpoint returns a `CustomerDto` but the controller wraps it in a `DataEnvelope`.
 
 ```c#
 [HttpGet("/v1/customers/{id}")]
@@ -33,10 +33,14 @@ public async Task<IActionResult> GetCustomer(Guid id)
 }
 ```
 
-Now we can use Siesta to configure a request
+Now we can use Siesta to configure a request. As part of this request we can specify the Resource and also the Expected Return type.
+
+In this case we will say that that the expected return type is the resource wrapped in a `DataEnvelope`. But you could have the resource as the return type.
+
+You can provide a method to extract the resource from the return type.
 
 ```c#
-public class GetCustomerRequest : SiestaRequestBase<CustomerDto>
+public class GetCustomerRequest : SiestaRequestBase<CustomerDto, DataEnvelope<CustomerDto>>
 {
     public Guid Id { get; set; }
 
@@ -49,6 +53,11 @@ public class GetCustomerRequest : SiestaRequestBase<CustomerDto>
         };
         
         return request;
+    }
+    
+    public override CustomerDto ExtractResourceFromReturn(DataEnvelope<CustomerDto> returnObject)
+    {
+        return returnObject.Data;
     }
 }
 ```
@@ -63,7 +72,9 @@ public async Task<CustomerDto> GetCustomer(Guid id)
         Id = id,
     };
     
-    var customerDto = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
+    var response = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
+    
+    var customerDto = request.ExtractResourceFromReturn(response);
     
     return customerDto;
 }
@@ -127,9 +138,9 @@ public async Task<DeserializedPagedList<CustomerDto>> GetCustomers(string name)
         },
     };
     
-    var customerDto = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
+    var customerDtos = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
     
-    return customerDto;
+    return customerDtos;
 }
 ```
 
@@ -181,9 +192,9 @@ public async Task<DeserializedPagedList<CustomerDto>> GetCustomers(string name)
         },
     };
     
-    var customerDto = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
+    var customerDtos = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
     
-    return customerDto;
+    return customerDtos;
 }
 ```
 
@@ -205,7 +216,7 @@ A Siesta client is perfectly primed to be injected as part of your DI provider a
 
 You can do all configuration of you Siesta client yourself. Simply register it how you would register any other HttpClient[https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0#consumption-patterns].
 
-However there are also some (currently one) extension methods to make registration easier. If there are some common use cases we will look to add these in future. If you think yu have a common usage then please feel free to make a PR!
+However there are also some (currently one) extension methods to make registration easier. If there are some common use cases we will look to add these in future. If you think you have a common usage then please feel free to make a PR!
 
 #### IServiceCollection extensions
 
