@@ -1,5 +1,6 @@
 namespace Siesta.Client
 {
+    using System;
     using System.Net.Http;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
@@ -48,30 +49,37 @@ namespace Siesta.Client
         }
 
         /// <inheritdoc />
-        public async Task<TReturn> SendAsync<TReturn>(SiestaRequest<TReturn> siestaRequest)
+        public async Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest)
         {
             return await this.SendRequestWithExpectedContent<TReturn>(siestaRequest.GenerateRequestMessage());
         }
 
         /// <inheritdoc />
-        public async Task<TReturn> SendAsync<TReturn>(SiestaRequest<TReturn> siestaRequest, string currentCorrelationId)
+        public async Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest, string currentCorrelationId)
         {
             return await this.SendRequestWithExpectedContent<TReturn>(siestaRequest.GenerateRequestMessage(), currentCorrelationId);
         }
 
         /// <inheritdoc />
-        public async Task<TReturn> SendAsync<TReturn>(SiestaPatchRequest<TReturn> siestaPatchRequest)
+        public async Task<TReturn> SendAsync<TReturn, TResource, TGetReturn>(
+            SiestaPatchRequest<TReturn, TResource, TGetReturn> siestaPatchRequest)
         {
-            var originalResource = await this.SendRequestWithExpectedContent<TReturn>(siestaPatchRequest.GenerateGetRequestMessage());
+            var getReturnObject = await this.SendRequestWithExpectedContent<TGetReturn>(siestaPatchRequest.GenerateGetRequestMessage());
+
+            var originalResource = siestaPatchRequest.ExtractResourceFromGetReturn(getReturnObject);
 
             return await this.SendRequestWithExpectedContent<TReturn>(
                 siestaPatchRequest.GeneratePatchRequestMessage(originalResource));
         }
 
         /// <inheritdoc />
-        public async Task<TReturn> SendAsync<TReturn>(SiestaPatchRequest<TReturn> siestaPatchRequest, string currentCorrelationId)
+        public async Task<TReturn> SendAsync<TReturn, TResource, TGetReturn>(
+            SiestaPatchRequest<TReturn, TResource, TGetReturn> siestaPatchRequest,
+            string currentCorrelationId)
         {
-            var originalResource = await this.SendRequestWithExpectedContent<TReturn>(siestaPatchRequest.GenerateGetRequestMessage(), currentCorrelationId);
+            var getReturnObject = await this.SendRequestWithExpectedContent<TGetReturn>(siestaPatchRequest.GenerateGetRequestMessage(), currentCorrelationId);
+
+            var originalResource = siestaPatchRequest.ExtractResourceFromGetReturn(getReturnObject);
 
             return await this.SendRequestWithExpectedContent<TReturn>(
                 siestaPatchRequest.GeneratePatchRequestMessage(originalResource), currentCorrelationId);
@@ -91,7 +99,16 @@ namespace Siesta.Client
                 requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
             }
 
-            var response = await this.client.SendAsync(requestMessage);
+            HttpResponseMessage response;
+
+            try
+            {
+                response = await this.client.SendAsync(requestMessage);
+            }
+            catch (Exception e)
+            {
+                throw new SiestaHttpException("HTTP call was not successful.", e);
+            }
 
             if (!response.IsSuccessStatusCode)
             {
@@ -120,7 +137,16 @@ namespace Siesta.Client
                 requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
             }
 
-            var response = await this.client.SendAsync(requestMessage);
+            HttpResponseMessage response;
+
+            try
+            {
+                response = await this.client.SendAsync(requestMessage);
+            }
+            catch (Exception e)
+            {
+                throw new SiestaHttpException("HTTP call was not successful.", e);
+            }
 
             if (!response.IsSuccessStatusCode)
             {

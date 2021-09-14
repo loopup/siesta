@@ -1,5 +1,6 @@
 namespace Siesta.Configuration.Tests.RequestConfiguration
 {
+    using System;
     using Siesta.Configuration.Exceptions;
     using Siesta.Configuration.RequestConfiguration;
     using Xunit;
@@ -29,9 +30,33 @@ namespace Siesta.Configuration.Tests.RequestConfiguration
         }
 
         #endregion
+
+        #region ExtractResourceFromGetReturn
+
+        [Fact]
+        public void ExtractResourceFromGetReturn_NotOverridden_ThrowsRequestNotImplementedException()
+        {
+            var request = new UnimplementedSiestaPatchRequest();
+
+            Assert.Throws<SiestaRequestNotImplementedException>(() => request.ExtractResourceFromGetReturn(10));
+        }
+
+        #endregion
+
+        #region ExtractResourceFromReturn
+
+        [Fact]
+        public void ExtractResourceFromReturn_NotOverridden_ThrowsRequestNotImplementedException()
+        {
+            var request = new UnimplementedSiestaPatchRequest();
+
+            Assert.Throws<SiestaRequestNotImplementedException>(() => request.ExtractResourceFromReturn(Guid.Empty));
+        }
+
+        #endregion
     }
 
-    public class UnimplementedSiestaPatchRequest : SiestaPatchRequest<string>
+    public class UnimplementedSiestaPatchRequest : SiestaPatchRequest<Guid, string, int>
     {
         public UnimplementedSiestaPatchRequest()
             : base("some string")

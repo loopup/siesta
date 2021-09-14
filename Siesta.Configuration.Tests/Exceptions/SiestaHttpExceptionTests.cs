@@ -38,6 +38,18 @@ namespace Siesta.Configuration.Tests.Exceptions
             siestaException.FailedHttpResponseMessage.Should().Be(httpResponse);
         }
 
+        [Fact]
+        public void Construction_MessageAndInnerExceptionProvided_SetsMessageAndInnerException()
+        {
+            var message = "This is the message.";
+            var inner = new Exception();
+
+            var siestaException = new SiestaHttpException(message, inner);
+
+            siestaException.Message.Should().Be(message);
+            siestaException.InnerException.Should().Be(inner);
+        }
+
         #endregion
 
         #region Serialization

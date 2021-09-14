@@ -33,7 +33,7 @@ namespace Siesta.Client.Tests
         #region SendAsync content expected
 
         [Fact]
-        public async Task SendAsyncContentExpected_HttpCallSuccessful_ReturnsContent()
+        public async Task SendAsyncContent_HttpCallSuccessful_ReturnsContent()
         {
             var httpRequest = new HttpRequestMessage();
             var request = new TestContentSiestaRequest(httpRequest);
@@ -44,7 +44,7 @@ namespace Siesta.Client.Tests
 
             this.SetupMessageHandler(responseContent, httpRequest);
 
-            var result = await this.sut.SendAsync<TestContent>(request);
+            var result = await this.sut.SendAsync(request);
 
             result.Should().BeEquivalentTo(responseContent);
         }
@@ -97,6 +97,22 @@ namespace Siesta.Client.Tests
                 .Should()
                 .Throw<SiestaConfigurationException>()
                 .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
+        }
+
+        [Fact]
+        public async Task SendAsyncContent_HttpCallThrowsException_ThrowsSiestaHttpException()
+        {
+            var httpRequest = new HttpRequestMessage();
+            var request = new TestContentSiestaRequest(httpRequest);
+            var requestException = new Exception();
+
+            this.SetupMessageHandler(httpRequest, requestException);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.InnerException.Should().Be(requestException);
+            exception.Message.Should().Be("HTTP call was not successful.");
         }
 
         [Fact]
@@ -221,6 +237,22 @@ namespace Siesta.Client.Tests
                 .Should()
                 .Throw<SiestaConfigurationException>()
                 .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
+        }
+
+        [Fact]
+        public async Task SendAsyncNoContent_ExpectedHttpCallThrowsException_ThrowsSiestaHttpException()
+        {
+            var httpRequest = new HttpRequestMessage();
+            var request = new TestNoContentSiestaRequest(httpRequest);
+            var requestException = new Exception();
+
+            this.SetupMessageHandler(httpRequest, requestException);
+
+            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
+                this.sut.SendAsync(request));
+
+            exception.InnerException.Should().Be(requestException);
+            exception.Message.Should().Be("HTTP call was not successful.");
         }
 
         [Fact]
@@ -492,6 +524,19 @@ namespace Siesta.Client.Tests
         }
 
         private void SetupMessageHandler(
+            HttpRequestMessage requestMessage,
+            Exception requestException)
+        {
+            this.httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(r => r == requestMessage),
+                    ItExpr.IsAny<CancellationToken>())
+                .ThrowsAsync(requestException);
+        }
+
+        private void SetupMessageHandler(
             object responseContent,
             HttpRequestMessage requestMessage)
         {
@@ -522,7 +567,7 @@ namespace Siesta.Client.Tests
         }
     }
 
-    internal class TestContentSiestaRequest : SiestaRequest<TestContent>
+    internal class TestContentSiestaRequest : SiestaRequest<TestContent, TestContent>
     {
         private readonly HttpRequestMessage requestMessage;
 
@@ -550,7 +595,7 @@ namespace Siesta.Client.Tests
         }
     }
 
-    internal class TestPatchRequest : SiestaPatchRequest<TestContent>
+    internal class TestPatchRequest : SiestaPatchRequest<TestContent, TestContent, TestContent>
     {
         private readonly HttpRequestMessage requestMessage;
         private readonly HttpRequestMessage getRequestMessage;
@@ -570,6 +615,11 @@ namespace Siesta.Client.Tests
         public override HttpRequestMessage GenerateGetRequestMessage()
         {
             return this.getRequestMessage;
+        }
+
+        public override TestContent ExtractResourceFromGetReturn(TestContent getReturnObject)
+        {
+            return getReturnObject;
         }
     }
 

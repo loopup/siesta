@@ -11,7 +11,7 @@ namespace Siesta.Configuration.Exceptions
     [Serializable]
     public class SiestaHttpException : Exception
     {
-        private HttpResponseMessage failedHttpResponseMessage;
+        private HttpResponseMessage? failedHttpResponseMessage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SiestaHttpException"/> class.
@@ -39,6 +39,16 @@ namespace Siesta.Configuration.Exceptions
         /// <summary>
         /// Initializes a new instance of the <see cref="SiestaHttpException"/> class.
         /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="innerException">The inner exception.</param>
+        public SiestaHttpException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SiestaHttpException"/> class.
+        /// </summary>
         /// <param name="info">Instance of <see cref="SerializationInfo"/>.</param>
         /// <param name="context">Instance of <see cref="StreamingContext"/>.</param>
         [JsonConstructor]
@@ -52,7 +62,7 @@ namespace Siesta.Configuration.Exceptions
         /// <summary>
         /// Gets the failed HTTP response.
         /// </summary>
-        public HttpResponseMessage FailedHttpResponseMessage => this.failedHttpResponseMessage;
+        public HttpResponseMessage? FailedHttpResponseMessage => this.failedHttpResponseMessage;
 
         /// <inheritdoc />
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
