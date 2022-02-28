@@ -89,13 +89,8 @@ namespace Siesta.Client
         {
             var requestMessage = siestaRequest.GenerateRequestMessage();
 
-            if (currentCorrelationId is not null)
+            if (currentCorrelationId is not null && this.correlationIdHeaderName is not null)
             {
-                if (this.correlationIdHeaderName is null)
-                {
-                    throw new SiestaConfigurationException(ConfigurationIssue.CorrelationIdHeaderNotConfigured);
-                }
-
                 requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
             }
 
@@ -127,13 +122,8 @@ namespace Siesta.Client
 
         private async Task<T> SendRequestWithExpectedContent<T>(HttpRequestMessage requestMessage, string? currentCorrelationId = null)
         {
-            if (currentCorrelationId is not null)
+            if (currentCorrelationId is not null && this.correlationIdHeaderName is not null)
             {
-                if (this.correlationIdHeaderName is null)
-                {
-                    throw new SiestaConfigurationException(ConfigurationIssue.CorrelationIdHeaderNotConfigured);
-                }
-
                 requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
             }
 
