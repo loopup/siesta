@@ -85,21 +85,6 @@ namespace Siesta.Client.Tests
         }
 
         [Fact]
-        public void SendAsyncContent_CurrentCorrelationIdBytHeaderNotConfigured_ThrowsConfigurationException()
-        {
-            var clientWithoutHeaderConfigured = new MyClient(new HttpClient());
-
-            Func<Task> action = async () => await clientWithoutHeaderConfigured.SendAsync(
-                new TestContentSiestaRequest(),
-                Guid.NewGuid().ToString());
-
-            action
-                .Should()
-                .Throw<SiestaConfigurationException>()
-                .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
-        }
-
-        [Fact]
         public async Task SendAsyncContent_HttpCallThrowsException_ThrowsSiestaHttpException()
         {
             var httpRequest = new HttpRequestMessage();
@@ -225,21 +210,6 @@ namespace Siesta.Client.Tests
         }
 
         [Fact]
-        public void SendAsyncNoContent_CurrentCorrelationIdBytHeaderNotConfigured_ThrowsConfigurationException()
-        {
-            var clientWithoutHeaderConfigured = new MyClient(new HttpClient());
-
-            Func<Task> action = async () => await clientWithoutHeaderConfigured.SendAsync(
-                new TestNoContentSiestaRequest(),
-                Guid.NewGuid().ToString());
-
-            action
-                .Should()
-                .Throw<SiestaConfigurationException>()
-                .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
-        }
-
-        [Fact]
         public async Task SendAsyncNoContent_ExpectedHttpCallThrowsException_ThrowsSiestaHttpException()
         {
             var httpRequest = new HttpRequestMessage();
@@ -297,21 +267,6 @@ namespace Siesta.Client.Tests
         #endregion
 
         #region SendAsync patch request
-
-        [Fact]
-        public void SendAsyncPatchRequest_CurrentCorrelationIdBytHeaderNotConfigured_ThrowsConfigurationException()
-        {
-            var clientWithoutHeaderConfigured = new MyClient(new HttpClient());
-
-            Func<Task> action = async () => await clientWithoutHeaderConfigured.SendAsync(
-                new TestPatchRequest(new TestContent()),
-                Guid.NewGuid().ToString());
-
-            action
-                .Should()
-                .Throw<SiestaConfigurationException>()
-                .Where(e => e.ConfigurationIssue == ConfigurationIssue.CorrelationIdHeaderNotConfigured);
-        }
 
         [Fact]
         public async Task SendAsyncPatchRequest_FailsToGetOriginal_ThrowsSiestaHttpException()
