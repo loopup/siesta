@@ -4,7 +4,7 @@ namespace Siesta.Client
     using System.Net.Http;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
-    using Siesta.Configuration.Exceptions;
+    using Siesta.Client.Exceptions;
     using Siesta.Configuration.RequestConfiguration;
 
     /// <summary>
@@ -94,27 +94,18 @@ namespace Siesta.Client
                 requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
             }
 
-            HttpResponseMessage response;
-
-            try
-            {
-                response = await this.client.SendAsync(requestMessage);
-            }
-            catch (Exception e)
-            {
-                throw new SiestaHttpException("HTTP call was not successful.", e);
-            }
+            var response = await this.client.SendAsync(requestMessage);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new SiestaHttpException("HTTP call was not successful.", response);
+                throw new SiestaHttpCallFailedException(response);
             }
 
             var content = await response.Content.ReadAsStringAsync();
 
             if (!string.IsNullOrEmpty(content))
             {
-                throw new SiestaHttpException("Content was not as expected.", response);
+                throw new SiestaContentException(response);
             }
 
             return Task.CompletedTask;
@@ -127,20 +118,11 @@ namespace Siesta.Client
                 requestMessage.Headers.Add(this.correlationIdHeaderName, currentCorrelationId);
             }
 
-            HttpResponseMessage response;
-
-            try
-            {
-                response = await this.client.SendAsync(requestMessage);
-            }
-            catch (Exception e)
-            {
-                throw new SiestaHttpException("HTTP call was not successful.", e);
-            }
+            var response = await this.client.SendAsync(requestMessage);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new SiestaHttpException("HTTP call was not successful.", response);
+                throw new SiestaHttpCallFailedException(response);
             }
 
             try
@@ -149,18 +131,18 @@ namespace Siesta.Client
 
                 if (deserialized == null)
                 {
-                    throw new SiestaHttpException("Content was unexpectedly null.", response);
+                    throw new SiestaContentException(response);
                 }
 
                 return deserialized;
             }
-            catch (SiestaHttpException)
+            catch (SiestaContentException)
             {
                 throw;
             }
             catch
             {
-                throw new SiestaHttpException("Content was not as expected.", response);
+                throw new SiestaContentException(response);
             }
         }
     }
