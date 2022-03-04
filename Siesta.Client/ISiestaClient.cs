@@ -1,7 +1,7 @@
 namespace Siesta.Client
 {
     using System.Threading.Tasks;
-    using Siesta.Configuration.Exceptions;
+    using Siesta.Client.Exceptions;
     using Siesta.Configuration.RequestConfiguration;
 
     /// <summary>
@@ -15,7 +15,7 @@ namespace Siesta.Client
         /// </summary>
         /// <param name="siestaRequest">The request to send.</param>
         /// <returns>A completed task.</returns>
-        /// <throws><see cref="SiestaHttpException"/>.</throws>
+        /// <throws><see cref="SiestaHttpCallFailedException"/>.</throws>
         Task<Task> SendAsync(SiestaRequest siestaRequest);
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Siesta.Client
         /// <param name="siestaRequest">The request to send.</param>
         /// <param name="currentCorrelationId">If you are using a correlation ID and you are already part of a call you can pass this here.</param>
         /// <returns>A completed task.</returns>
-        /// <throws><see cref="SiestaHttpException"/>.</throws>
+        /// <throws><see cref="SiestaHttpCallFailedException"/>.</throws>
         Task<Task> SendAsync(SiestaRequest siestaRequest, string currentCorrelationId);
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Siesta.Client
         /// <typeparam name="TResource">The type of the resource.</typeparam>
         /// <typeparam name="TReturn">The expected return type for data.</typeparam>
         /// <returns>The retrieved, updated or created data.</returns>
-        /// <throws><see cref="SiestaHttpException"/>.</throws>
+        /// <throws><see cref="SiestaHttpCallFailedException"/>.</throws>
         Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest);
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Siesta.Client
         /// <typeparam name="TResource">The type of the resource.</typeparam>
         /// <typeparam name="TReturn">The expected return type for data.</typeparam>
         /// <returns>The retrieved, updated or created data.</returns>
-        /// <throws><see cref="SiestaHttpException"/>.</throws>
+        /// <throws><see cref="SiestaHttpCallFailedException"/>.</throws>
         Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest, string currentCorrelationId);
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Siesta.Client
         /// <typeparam name="TResource">The type of the resource being patched.</typeparam>
         /// <typeparam name="TGetReturn">The type of the object returned from the Get request.</typeparam>
         /// <returns>The updated resource.</returns>
-        /// <throws><see cref="SiestaHttpException"/>.</throws>
+        /// <throws><see cref="SiestaHttpCallFailedException"/>.</throws>
         Task<TReturn> SendAsync<TReturn, TResource, TGetReturn>(SiestaPatchRequest<TReturn, TResource, TGetReturn> siestaPatchRequest);
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Siesta.Client
         /// <typeparam name="TResource">The type of the resource being patched.</typeparam>
         /// <typeparam name="TGetReturn">The type of the object returned from the Get request.</typeparam>
         /// <returns>The updated resource.</returns>
-        /// <throws><see cref="SiestaHttpException"/>.</throws>
+        /// <throws><see cref="SiestaHttpCallFailedException"/>.</throws>
         Task<TReturn> SendAsync<TReturn, TResource, TGetReturn>(
             SiestaPatchRequest<TReturn, TResource, TGetReturn> siestaPatchRequest, string currentCorrelationId);
     }

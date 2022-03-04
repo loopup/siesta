@@ -10,7 +10,8 @@ namespace Siesta.Client.Tests
     using Moq;
     using Moq.Protected;
     using Newtonsoft.Json;
-    using Siesta.Configuration.Exceptions;
+    using Siesta.Client.Exceptions;
+    using Siesta.Client.Tests.Helpers;
     using Siesta.Configuration.RequestConfiguration;
     using Xunit;
 
@@ -85,7 +86,7 @@ namespace Siesta.Client.Tests
         }
 
         [Fact]
-        public async Task SendAsyncContent_HttpCallThrowsException_ThrowsSiestaHttpException()
+        public async Task SendAsyncContent_HttpCallThrowsException_Bubbles()
         {
             var httpRequest = new HttpRequestMessage();
             var request = new TestContentSiestaRequest(httpRequest);
@@ -93,15 +94,13 @@ namespace Siesta.Client.Tests
 
             this.SetupMessageHandler(httpRequest, requestException);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.InnerException.Should().Be(requestException);
-            exception.Message.Should().Be("HTTP call was not successful.");
+            (await act.Should().ThrowAsync<Exception>()).Which.Should().Be(requestException);
         }
 
         [Fact]
-        public async Task SendAsyncContent_HttpCallReturnsUnsuccessful_ThrowsSiestaHttpException()
+        public async Task SendAsyncContent_HttpCallReturnsUnsuccessful_ThrowsSiestaHttpCallFailedException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -109,18 +108,17 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestContentSiestaRequest(httpRequest);
+            var expectedException = new SiestaHttpCallFailedException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(responseMessage);
-            exception.Message.Should().Be("HTTP call was not successful.");
+            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
-        public async Task SendAsyncContent_HttpContentDoesNotMatchExpectedFormat_ThrowsSiestaHttpException()
+        public async Task SendAsyncContent_HttpContentDoesNotMatchExpectedFormat_ThrowsSiestaContentException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -129,14 +127,13 @@ namespace Siesta.Client.Tests
                 Content = new StringContent("just a string"),
             };
             var request = new TestContentSiestaRequest(httpRequest);
+            var expectedException = new SiestaContentException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(responseMessage);
-            exception.Message.Should().Be("Content was not as expected.");
+            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
@@ -148,14 +145,13 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.OK,
             };
             var request = new TestContentSiestaRequest(httpRequest);
+            var expectedException = new SiestaContentException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(responseMessage);
-            exception.Message.Should().Be("Content was unexpectedly null.");
+            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         #endregion
@@ -210,7 +206,7 @@ namespace Siesta.Client.Tests
         }
 
         [Fact]
-        public async Task SendAsyncNoContent_ExpectedHttpCallThrowsException_ThrowsSiestaHttpException()
+        public async Task SendAsyncNoContent_ExpectedHttpCallThrowsException_Bubbles()
         {
             var httpRequest = new HttpRequestMessage();
             var request = new TestNoContentSiestaRequest(httpRequest);
@@ -218,15 +214,13 @@ namespace Siesta.Client.Tests
 
             this.SetupMessageHandler(httpRequest, requestException);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.InnerException.Should().Be(requestException);
-            exception.Message.Should().Be("HTTP call was not successful.");
+            (await act.Should().ThrowAsync<Exception>()).Which.Should().Be(requestException);
         }
 
         [Fact]
-        public async Task SendAsyncNoContent_ExpectedHttpCallReturnsUnsuccessful_ThrowsSiestaHttpException()
+        public async Task SendAsyncNoContent_ExpectedHttpCallReturnsUnsuccessful_ThrowsSiestaCallFailedExceptionException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -234,18 +228,17 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestNoContentSiestaRequest(httpRequest);
+            var expectedException = new SiestaHttpCallFailedException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(responseMessage);
-            exception.Message.Should().Be("HTTP call was not successful.");
+            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
-        public async Task SendAsyncNoContent_ExpectedHttpContentNotNull_ThrowsSiestaHttpException()
+        public async Task SendAsyncNoContent_ExpectedHttpContentNotNull_ThrowsSiestaContentException()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -254,14 +247,13 @@ namespace Siesta.Client.Tests
                 Content = new StringContent("just a string"),
             };
             var request = new TestNoContentSiestaRequest(httpRequest);
+            var expectedException = new SiestaContentException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(responseMessage);
-            exception.Message.Should().Be("Content was not as expected.");
+            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         #endregion
@@ -269,7 +261,7 @@ namespace Siesta.Client.Tests
         #region SendAsync patch request
 
         [Fact]
-        public async Task SendAsyncPatchRequest_FailsToGetOriginal_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_FailsToGetOriginal_ThrowsSiestaCallFailedException()
         {
             var getRequest = new HttpRequestMessage();
             var getResponse = new HttpResponseMessage
@@ -277,18 +269,17 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest);
+            var expectedException = new SiestaHttpCallFailedException(getResponse);
 
             this.SetupMessageHandler(getResponse, getRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(getResponse);
-            exception.Message.Should().Be("HTTP call was not successful.");
+            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
-        public async Task SendAsyncPatchRequest_GetHttpContentDoesNotMatchExpectedFormat_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetHttpContentDoesNotMatchExpectedFormat_ThrowsSiestaContentException()
         {
             var getRequest = new HttpRequestMessage();
             var getResponse = new HttpResponseMessage
@@ -297,18 +288,17 @@ namespace Siesta.Client.Tests
                 Content = new StringContent("just a string"),
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest);
+            var expectedException = new SiestaContentException(getResponse);
 
             this.SetupMessageHandler(getResponse, getRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(getResponse);
-            exception.Message.Should().Be("Content was not as expected.");
+            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
-        public async Task SendAsyncPatchRequest_GetHttpContentIsNull_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetHttpContentIsNull_ThrowsSiestaContentException()
         {
             var getRequest = new HttpRequestMessage();
             var getResponse = new HttpResponseMessage
@@ -317,18 +307,17 @@ namespace Siesta.Client.Tests
                 Content = null,
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest);
+            var expectedException = new SiestaContentException(getResponse);
 
             this.SetupMessageHandler(getResponse, getRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(getResponse);
-            exception.Message.Should().Be("Content was unexpectedly null.");
+            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
-        public async Task SendAsyncPatchRequest_GetSuccessfulPatchUnsuccessful_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetSuccessfulPatchUnsuccessful_ThrowsSiestaCallFailedException()
         {
             var getRequest = new HttpRequestMessage();
             var getContent = new TestContent();
@@ -338,19 +327,18 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
+            var expectedException = new SiestaHttpCallFailedException(patchResponse);
 
             this.SetupMessageHandler(getContent, getRequest);
             this.SetupMessageHandler(patchResponse, patchRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(patchResponse);
-            exception.Message.Should().Be("HTTP call was not successful.");
+            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
-        public async Task SendAsyncPatchRequest_GetSuccessfulPatchContentNotAsExpected_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetSuccessfulPatchContentNotAsExpected_ThrowsSiestaContentException()
         {
             var getRequest = new HttpRequestMessage();
             var getContent = new TestContent();
@@ -361,19 +349,18 @@ namespace Siesta.Client.Tests
                 Content = new StringContent("just a string"),
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
+            var expectedException = new SiestaContentException(patchResponse);
 
             this.SetupMessageHandler(getContent, getRequest);
             this.SetupMessageHandler(patchResponse, patchRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(patchResponse);
-            exception.Message.Should().Be("Content was not as expected.");
+            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
-        public async Task SendAsyncPatchRequest_GetSuccessfulPatchContentNull_ThrowsSiestaHttpException()
+        public async Task SendAsyncPatchRequest_GetSuccessfulPatchContentNull_ThrowsSiestaContentException()
         {
             var getRequest = new HttpRequestMessage();
             var getContent = new TestContent();
@@ -384,15 +371,14 @@ namespace Siesta.Client.Tests
                 Content = null,
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
+            var expectedException = new SiestaContentException(patchResponse);
 
             this.SetupMessageHandler(getContent, getRequest);
             this.SetupMessageHandler(patchResponse, patchRequest);
 
-            var exception = await Assert.ThrowsAsync<SiestaHttpException>(() =>
-                this.sut.SendAsync(request));
+            Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            exception.FailedHttpResponseMessage.Should().Be(patchResponse);
-            exception.Message.Should().Be("Content was unexpectedly null.");
+            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
         }
 
         [Fact]
