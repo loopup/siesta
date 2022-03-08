@@ -10,7 +10,7 @@ namespace Siesta.Client
     /// <summary>
     /// The <see cref="SiestaClient"/> that can be used to communicate with an API built using Siesta.
     /// </summary>
-    public abstract class SiestaClient : ISiestaClient
+    public class SiestaClient : ISiestaClient
     {
         private readonly HttpClient client;
         private readonly string? correlationIdHeaderName;
@@ -19,7 +19,7 @@ namespace Siesta.Client
         /// Initializes a new instance of the <see cref="SiestaClient"/> class.
         /// </summary>
         /// <param name="httpClient">A pre-configured <see cref="HttpClient"/>.</param>
-        protected SiestaClient(HttpClient httpClient)
+        public SiestaClient(HttpClient httpClient)
         {
             this.client = httpClient;
             this.correlationIdHeaderName = null;
@@ -30,7 +30,7 @@ namespace Siesta.Client
         /// </summary>
         /// <param name="httpClient">A pre-configured <see cref="HttpClient"/>.</param>
         /// <param name="siestaClientConfigurationOptions">Configuration options for a <see cref="SiestaClient"/>.</param>
-        protected SiestaClient(HttpClient httpClient, SiestaClientConfigurationOptions siestaClientConfigurationOptions)
+        public SiestaClient(HttpClient httpClient, SiestaClientConfigurationOptions siestaClientConfigurationOptions)
         {
             this.client = httpClient;
             this.correlationIdHeaderName = siestaClientConfigurationOptions.RequestHeaderCorrelationIdKey;
@@ -43,7 +43,7 @@ namespace Siesta.Client
         }
 
         /// <inheritdoc />
-        public async Task<Task> SendAsync(SiestaRequest siestaRequest, string currentCorrelationId)
+        public async Task<Task> SendAsync(SiestaRequest siestaRequest, string? currentCorrelationId)
         {
             return await this.SendRequestWithNoExpectedContent(siestaRequest, currentCorrelationId);
         }
@@ -55,7 +55,7 @@ namespace Siesta.Client
         }
 
         /// <inheritdoc />
-        public async Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest, string currentCorrelationId)
+        public async Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest, string? currentCorrelationId)
         {
             return await this.SendRequestWithExpectedContent<TReturn>(siestaRequest.GenerateRequestMessage(), currentCorrelationId);
         }
@@ -75,7 +75,7 @@ namespace Siesta.Client
         /// <inheritdoc />
         public async Task<TReturn> SendAsync<TReturn, TResource, TGetReturn>(
             SiestaPatchRequest<TReturn, TResource, TGetReturn> siestaPatchRequest,
-            string currentCorrelationId)
+            string? currentCorrelationId)
         {
             var getReturnObject = await this.SendRequestWithExpectedContent<TGetReturn>(siestaPatchRequest.GenerateGetRequestMessage(), currentCorrelationId);
 
