@@ -108,13 +108,12 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestContentSiestaRequest(httpRequest);
-            var expectedException = new SiestaHttpCallFailedException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
             Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
+            await act.Should().ThrowAsync<SiestaHttpCallFailedException>();
         }
 
         [Fact]
@@ -228,13 +227,12 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestNoContentSiestaRequest(httpRequest);
-            var expectedException = new SiestaHttpCallFailedException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
             Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
+            await act.Should().ThrowAsync<SiestaHttpCallFailedException>();
         }
 
         [Fact]
@@ -269,13 +267,12 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest);
-            var expectedException = new SiestaHttpCallFailedException(getResponse);
 
             this.SetupMessageHandler(getResponse, getRequest);
 
             Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
+            await act.Should().ThrowAsync<SiestaHttpCallFailedException>();
         }
 
         [Fact]
@@ -327,14 +324,13 @@ namespace Siesta.Client.Tests
                 StatusCode = HttpStatusCode.BadRequest,
             };
             var request = new TestPatchRequest(new TestContent(), getRequestMessage: getRequest, requestMessage: patchRequest);
-            var expectedException = new SiestaHttpCallFailedException(patchResponse);
 
             this.SetupMessageHandler(getContent, getRequest);
             this.SetupMessageHandler(patchResponse, patchRequest);
 
             Func<Task> act = async () => await this.sut.SendAsync(request);
 
-            (await act.Should().ThrowAsync<SiestaHttpCallFailedException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
+            await act.Should().ThrowAsync<SiestaHttpCallFailedException>();
         }
 
         [Fact]

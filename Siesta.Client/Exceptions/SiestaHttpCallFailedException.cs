@@ -18,7 +18,7 @@ namespace Siesta.Client.Exceptions
         /// </summary>
         /// <param name="failedHttpResponseMessage">The failed HTTP response.</param>
         public SiestaHttpCallFailedException(HttpResponseMessage failedHttpResponseMessage)
-            : base("HTTP call was unsuccessful.")
+            : base($"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(failedHttpResponseMessage)}")
         {
             this.failedHttpResponseMessage = failedHttpResponseMessage;
         }
@@ -29,7 +29,7 @@ namespace Siesta.Client.Exceptions
         /// <param name="innerException">The inner exception.</param>
         /// <param name="failedHttpResponseMessage">The failed HTTP response.</param>
         public SiestaHttpCallFailedException(Exception innerException, HttpResponseMessage failedHttpResponseMessage)
-            : base("HTTP call was unsuccessful.", innerException)
+            : base($"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(failedHttpResponseMessage)}", innerException)
         {
             this.failedHttpResponseMessage = failedHttpResponseMessage;
         }
