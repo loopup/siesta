@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/saintedlama/versionize) for commit guidelines.
 
-<a name="0.3.0"></a>
+<a name="0.3.1"></a>
+## 0.3.1 (2022-7-25)
+
+### Bug Fixes
+
+* Include response information in SiestaHttpCallFailedException
+
 ## 0.3.0 (2022-3-8)
 
 ### Features
