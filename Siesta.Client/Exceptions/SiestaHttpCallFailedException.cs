@@ -11,16 +11,19 @@ namespace Siesta.Client.Exceptions
     [Serializable]
     public class SiestaHttpCallFailedException : Exception
     {
-        private HttpResponseMessage failedHttpResponseMessage;
+        private readonly HttpResponseMessage failedHttpResponseMessage;
+        private readonly string? failedMessageContent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SiestaHttpCallFailedException"/> class.
         /// </summary>
         /// <param name="failedHttpResponseMessage">The failed HTTP response.</param>
-        public SiestaHttpCallFailedException(HttpResponseMessage failedHttpResponseMessage)
-            : base($"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(failedHttpResponseMessage)}")
+        /// <param name="failedMessageContent">Content of the failed HTTP response.</param>
+        public SiestaHttpCallFailedException(HttpResponseMessage failedHttpResponseMessage, string failedMessageContent = "")
+            : base($"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(new { failedHttpResponseMessage, failedMessageContent })}")
         {
             this.failedHttpResponseMessage = failedHttpResponseMessage;
+            this.failedMessageContent = failedMessageContent;
         }
 
         /// <summary>
@@ -28,10 +31,14 @@ namespace Siesta.Client.Exceptions
         /// </summary>
         /// <param name="innerException">The inner exception.</param>
         /// <param name="failedHttpResponseMessage">The failed HTTP response.</param>
-        public SiestaHttpCallFailedException(Exception innerException, HttpResponseMessage failedHttpResponseMessage)
-            : base($"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(failedHttpResponseMessage)}", innerException)
+        /// <param name="failedMessageContent">Content of the failed HTTP response.</param>
+        public SiestaHttpCallFailedException(Exception innerException, HttpResponseMessage failedHttpResponseMessage, string failedMessageContent = "")
+            : base(
+                  $"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(new { failedHttpResponseMessage, failedMessageContent })}",
+                  innerException)
         {
             this.failedHttpResponseMessage = failedHttpResponseMessage;
+            this.failedMessageContent = failedMessageContent;
         }
 
         /// <summary>
@@ -45,6 +52,8 @@ namespace Siesta.Client.Exceptions
         {
             this.failedHttpResponseMessage =
                 (HttpResponseMessage)info.GetValue("failedHttpResponseMessage", typeof(HttpResponseMessage)) !;
+
+            this.failedMessageContent = info.GetString("failedMessageContent");
         }
 
         /// <summary>
@@ -61,6 +70,8 @@ namespace Siesta.Client.Exceptions
             }
 
             info.AddValue("failedHttpResponseMessage", this.failedHttpResponseMessage);
+            info.AddValue("failedMessageContent", this.failedMessageContent);
+
             base.GetObjectData(info, context);
         }
     }

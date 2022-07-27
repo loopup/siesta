@@ -95,13 +95,12 @@ namespace Siesta.Client
             }
 
             var response = await this.client.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new SiestaHttpCallFailedException(response);
+                throw new SiestaHttpCallFailedException(response, content);
             }
-
-            var content = await response.Content.ReadAsStringAsync();
 
             if (!string.IsNullOrEmpty(content))
             {
@@ -119,15 +118,16 @@ namespace Siesta.Client
             }
 
             var response = await this.client.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new SiestaHttpCallFailedException(response);
+                throw new SiestaHttpCallFailedException(response, content);
             }
 
             try
             {
-                var deserialized = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+                var deserialized = JsonConvert.DeserializeObject<T>(content);
 
                 if (deserialized == null)
                 {
