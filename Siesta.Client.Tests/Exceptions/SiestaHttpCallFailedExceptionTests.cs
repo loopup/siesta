@@ -6,7 +6,6 @@ namespace Siesta.Client.Tests.Exceptions
     using FluentAssertions;
     using Newtonsoft.Json;
     using Siesta.Client.Exceptions;
-    using Siesta.Client.Tests.Helpers;
     using Xunit;
 
     public class SiestaHttpCallFailedExceptionTests
@@ -19,9 +18,12 @@ namespace Siesta.Client.Tests.Exceptions
             var innerException = new Exception();
             var httpResponse = new HttpResponseMessage();
 
+            var expectedMessage = $"HTTP call was unsuccessful. " +
+                $"Response: {JsonConvert.SerializeObject(new { failedHttpResponseMessage = httpResponse, failedMessageContent = string.Empty })}";
+
             var siestaException = new SiestaHttpCallFailedException(innerException, httpResponse);
 
-            siestaException.Message.Should().Be($"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(httpResponse)}");
+            siestaException.Message.Should().Be(expectedMessage);
             siestaException.InnerException.Should().Be(innerException);
             siestaException.FailedHttpResponseMessage.Should().Be(httpResponse);
         }
@@ -37,9 +39,12 @@ namespace Siesta.Client.Tests.Exceptions
                 ReasonPhrase = "Entity not found",
             };
 
-            var siestaException = new SiestaHttpCallFailedException(httpResponse);
+            var expectedMessage = $"HTTP call was unsuccessful. " +
+                $"Response: {JsonConvert.SerializeObject(new { failedHttpResponseMessage = httpResponse, failedMessageContent = content })}";
 
-            siestaException.Message.Should().Be($"HTTP call was unsuccessful. Response: {JsonConvert.SerializeObject(httpResponse)}");
+            var siestaException = new SiestaHttpCallFailedException(httpResponse, content);
+
+            siestaException.Message.Should().Be(expectedMessage);
             siestaException.FailedHttpResponseMessage.Should().Be(httpResponse);
         }
 
