@@ -11,27 +11,17 @@
     /// </summary>
     /// <typeparam name="T">Type of the entity stored in set.</typeparam>
     [JsonObject]
-    public class SerializablePagedList<T> : PagedList<T>
+    public class SerializablePagedList<T> : StaticPagedList<T>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SerializablePagedList{T}"/> class.
-        /// </summary>
-        /// <param name="items">IQueryable set of entities.</param>
-        /// <param name="pageNumber">Number of page on which data will be displayed.</param>
-        /// <param name="pageSize">Maximum size of the set.</param>
-        public SerializablePagedList(IQueryable<T> items, int pageNumber, int pageSize)
-        : base(items, pageNumber, pageSize)
-        {
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializablePagedList{T}"/> class.
         /// </summary>
         /// <param name="items">IEnumerable set of entities.</param>
         /// <param name="pageNumber">Number of page on which data will be displayed.</param>
         /// <param name="pageSize">Maximum size of the set.</param>
-        public SerializablePagedList(IEnumerable<T> items, int pageNumber, int pageSize)
-            : base(items, pageNumber, pageSize)
+        /// <param name="totalItemCount">Total item count.</param>
+        public SerializablePagedList(IEnumerable<T> items, int pageNumber, int pageSize, int totalItemCount)
+            : base(items, pageNumber, pageSize, totalItemCount)
         {
         }
 
