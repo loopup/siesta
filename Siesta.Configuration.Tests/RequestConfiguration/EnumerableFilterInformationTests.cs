@@ -8,14 +8,14 @@ namespace Siesta.Configuration.Tests.RequestConfiguration
     public class EnumerableFilterInformationTests
     {
         [Fact]
-        public void AsQueryDictionary_AddsAllFields()
+        public void AsQueryDictionary_AddsAllFieldsEscaped()
         {
             var filters = new TestEnumerableFilterInformation
             {
                 Name = "My name",
             };
 
-            var expectedResult = new Dictionary<string, string> { { "PageNumber", "1" }, { "PageSize", "25" }, { "Name", "My name" } };
+            var expectedResult = new Dictionary<string, string> { { "PageNumber", "1" }, { "PageSize", "25" }, { "Name", "My%20name" } };
 
             var result = filters.AsQueryDictionary();
 

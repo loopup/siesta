@@ -1,5 +1,6 @@
 namespace Siesta.Configuration.RequestConfiguration
 {
+    using System;
     using System.Collections.Generic;
     using System.Reflection;
 
@@ -34,7 +35,7 @@ namespace Siesta.Configuration.RequestConfiguration
                 var value = property.GetValue(this);
                 if (value?.ToString() is not null)
                 {
-                    dictionary.Add(property.Name, value.ToString() !);
+                    dictionary.Add(property.Name, Uri.EscapeUriString(value.ToString() !));
                 }
             }
 
