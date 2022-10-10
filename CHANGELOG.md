@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/saintedlama/versionize) for commit guidelines.
 
-<a name="0.3.3"></a>
+<a name="0.3.4"></a>
+## 0.3.4 (2022-10-10)
+
+### Bug Fixes
+
+* Encode URI parameters
+
 ## 0.3.3 (2022-8-4)
 
 ### Bug Fixes
