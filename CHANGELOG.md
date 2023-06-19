@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/saintedlama/versionize) for commit guidelines.
 
+<a name="0.3.5"></a>
+## [0.3.5](https://www.github.com/loopup/siesta/releases/tag/v0.3.5) (2023-6-19)
+
+### Bug Fixes
+
+* Allow no required content requests ([2e9b925](https://www.github.com/loopup/siesta/commit/2e9b9259225bab9350d55e59f83741e1d89f9312))
+
 <a name="0.3.4"></a>
 ## 0.3.4 (2022-10-10)
 
