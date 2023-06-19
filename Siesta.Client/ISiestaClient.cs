@@ -11,7 +11,7 @@ namespace Siesta.Client
     public interface ISiestaClient
     {
         /// <summary>
-        /// Sends a request that expects no data in return.
+        /// Sends a request that requires no data in return.
         /// </summary>
         /// <param name="siestaRequest">The request to send.</param>
         /// <returns>A completed task.</returns>
@@ -19,7 +19,7 @@ namespace Siesta.Client
         Task<Task> SendAsync(SiestaRequest siestaRequest);
 
         /// <summary>
-        /// Sends a request that expects no data in return.
+        /// Sends a request that requires no data in return.
         /// </summary>
         /// <param name="siestaRequest">The request to send.</param>
         /// <param name="currentCorrelationId">If you are using a correlation ID and you are already part of a call you can pass this here.</param>
@@ -28,7 +28,7 @@ namespace Siesta.Client
         Task<Task> SendAsync(SiestaRequest siestaRequest, string? currentCorrelationId);
 
         /// <summary>
-        /// Sends a request that expects data in return.
+        /// Sends a request that requires data in return.
         /// </summary>
         /// <param name="siestaRequest">The request to send.</param>
         /// <typeparam name="TResource">The type of the resource.</typeparam>
@@ -38,7 +38,7 @@ namespace Siesta.Client
         Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest);
 
         /// <summary>
-        /// Sends a request that expects data in return.
+        /// Sends a request that requires data in return.
         /// </summary>
         /// <param name="siestaRequest">The request to send.</param>
         /// <param name="currentCorrelationId">If you are using a correlation ID and you are already part of a call you can pass this here.</param>
@@ -49,7 +49,7 @@ namespace Siesta.Client
         Task<TReturn> SendAsync<TResource, TReturn>(SiestaRequest<TResource, TReturn> siestaRequest, string? currentCorrelationId);
 
         /// <summary>
-        /// Sends a PATCH request that expected data in return.
+        /// Sends a PATCH request that requires data in return.
         /// </summary>
         /// <param name="siestaPatchRequest">The request to send.</param>
         /// <typeparam name="TReturn">The type of the object returned from the PATCH request.</typeparam>
@@ -60,7 +60,7 @@ namespace Siesta.Client
         Task<TReturn> SendAsync<TReturn, TResource, TGetReturn>(SiestaPatchRequest<TReturn, TResource, TGetReturn> siestaPatchRequest);
 
         /// <summary>
-        /// Sends a PATCH request that expected data in return.
+        /// Sends a PATCH request that requires data in return.
         /// </summary>
         /// <param name="siestaPatchRequest">The request to send.</param>
         /// <param name="currentCorrelationId">If you are using a correlation ID and you are already part of a call you can pass this here.</param>

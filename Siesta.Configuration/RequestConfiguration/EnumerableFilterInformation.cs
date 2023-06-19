@@ -35,7 +35,7 @@ namespace Siesta.Configuration.RequestConfiguration
                 var value = property.GetValue(this);
                 if (value?.ToString() is not null)
                 {
-                    dictionary.Add(property.Name, Uri.EscapeUriString(value.ToString() !));
+                    dictionary.Add(property.Name, Uri.EscapeDataString(value.ToString() !));
                 }
             }
 

@@ -236,7 +236,7 @@ namespace Siesta.Client.Tests
         }
 
         [Fact]
-        public async Task SendAsyncNoContent_ExpectedHttpContentNotNull_ThrowsSiestaContentException()
+        public async Task SendAsyncNoContent_ExpectedHttpContentNotNull_ReturnsCompletedTask()
         {
             var httpRequest = new HttpRequestMessage();
             var responseMessage = new HttpResponseMessage
@@ -245,13 +245,12 @@ namespace Siesta.Client.Tests
                 Content = new StringContent("just a string"),
             };
             var request = new TestNoContentSiestaRequest(httpRequest);
-            var expectedException = new SiestaContentException(responseMessage);
 
             this.SetupMessageHandler(responseMessage, httpRequest);
 
-            Func<Task> act = async () => await this.sut.SendAsync(request);
+            var result = await this.sut.SendAsync(request);
 
-            (await act.Should().ThrowAsync<SiestaContentException>()).Which.ShouldBeEquivalentToThrownException(expectedException);
+            result.IsCompleted.Should().BeTrue();
         }
 
         #endregion

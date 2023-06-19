@@ -4,7 +4,7 @@ namespace Siesta.Configuration.RequestConfiguration
     using Siesta.Configuration.Exceptions;
 
     /// <summary>
-    /// Base class for any request that expects no data to be returned.
+    /// Base class for any request that requires no data to be returned.
     /// </summary>
     public abstract class SiestaRequest
     {
