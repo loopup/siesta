@@ -1,58 +1,76 @@
-# Siesta
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET"/>
+  <img src="https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white" alt="C#"/>
+  <img src="https://img.shields.io/badge/NuGet-004880?style=for-the-badge&logo=nuget&logoColor=white" alt="NuGet"/>
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"/>
+</p>
 
-Siesta is a generic C# REST client that allows you to more reliably consume a RESTful API that you own from another .NET environment.
+<h1 align="center">🛋️ Siesta</h1>
 
-## Technical overview
+<p align="center">
+  <strong>A type-safe, DTO-driven REST client for .NET that makes API consumption a breeze.</strong>
+</p>
 
-Siesta is 2 .netstandard2.1 NuGet packages that include classes for the configuration of requests and an HTTP client to consume Siesta configures APIs.
+<p align="center">
+  <em>Stop writing boilerplate HTTP code. Start taking a Siesta.</em>
+</p>
 
-Siesta is split into a `Configuration` NuGet package, which includes everything you need to configure your requests and API, and a `CLient` package which includes what is needed to make calls to a Siesta configured API.
+---
 
-## Usage
+## ✨ Why Siesta?
 
-Siesta is focused fully on DTOs (Data Transfer Objects).
+Building reliable API integrations shouldn't be painful. Siesta provides a **strongly-typed**, **testable**, and **maintainable** approach to consuming RESTful APIs in .NET applications.
 
-Every controller endpoint has a corresponding DTO, even if this endpoint doesn't need to receive any data.
+| Feature | Benefit |
+|---------|---------|
+| 🎯 **DTO-Driven Design** | Every endpoint has a corresponding request class—no more magic strings |
+| 🔒 **Type Safety** | Compile-time checking for request/response types |
+| 🧪 **Fully Testable** | Unit test your API requests without hitting real endpoints |
+| 📦 **NuGet Ready** | Ship your API client as a package for consumers |
+| 🔄 **Smart PATCH Support** | Automatic diff generation for partial updates |
+| 📊 **Built-in Pagination** | First-class support for paged list responses |
+| 🔗 **Correlation IDs** | Track requests across distributed systems |
+| 📝 **Serilog Integration** | Comprehensive request/response logging out of the box |
 
-A Siesta DTO configures how to send a request and what form that data is expected back in (if at all).
+---
 
-Here we show some example controllers and how to configure requests.
+## 📦 Installation
 
-###Get specific resource
+Siesta is distributed as two NuGet packages to support different use cases:
 
-This endpoint returns a `CustomerDto` but the controller wraps it in a `DataEnvelope`.
+```bash
+# For API providers - configure your endpoints
+dotnet add package Siesta.Configuration
 
-```c#
-[HttpGet("/v1/customers/{id}")]
-[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CustomerDto))]
-[ProducesResponseType(StatusCodes.Status404NotFound)]
-public async Task<IActionResult> GetCustomer(Guid id)
-{
-    // Get customer
-    return customerDto;
-}
+# For API consumers - make HTTP calls
+dotnet add package Siesta.Client
 ```
 
-Now we can use Siesta to configure a request. As part of this request we can specify the Resource and also the Expected Return type.
+| Package | Purpose | Target |
+|---------|---------|--------|
+| `Siesta.Configuration` | Request configuration, DTOs, serialization helpers | API providers & consumers |
+| `Siesta.Client` | HTTP client, DI extensions, logging handlers | API consumers |
 
-In this case we will say that that the expected return type is the resource wrapped in a `DataEnvelope`. But you could have the resource as the return type.
+> **Compatibility:** .NET Standard 2.0+ and .NET 6.0+
 
-You can provide a method to extract the resource from the return type.
+---
 
-```c#
-public class GetCustomerRequest : SiestaRequestBase<CustomerDto, DataEnvelope<CustomerDto>>
+## 🚀 Quick Start
+
+### 1. Define Your Request
+
+```csharp
+public class GetCustomerRequest : SiestaRequest<CustomerDto, DataEnvelope<CustomerDto>>
 {
     public Guid Id { get; set; }
 
     public override HttpRequestMessage GenerateRequestMessage()
     {
-        var request = new HttpRequestMessage
+        return new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri($"v1/customers/{this.Id}"),
+            RequestUri = new Uri($"v1/customers/{Id}", UriKind.Relative),
         };
-        
-        return request;
     }
     
     public override CustomerDto ExtractResourceFromReturn(DataEnvelope<CustomerDto> returnObject)
@@ -62,168 +80,559 @@ public class GetCustomerRequest : SiestaRequestBase<CustomerDto, DataEnvelope<Cu
 }
 ```
 
-Then a consumer can simply use this with the Siesta client like so:
+### 2. Register the Client
 
-```c#
-public async Task<CustomerDto> GetCustomer(Guid id)
+```csharp
+services.AddSiestaClient<MyApiClient>(new CorrelationAndLoggingConfigurationOptions(
+    baseAddress: new Uri("https://api.example.com"),
+    systemName: "MyApplication"
+));
+```
+
+### 3. Make the Call
+
+```csharp
+public class CustomerService
 {
-    var request = new GetCustomerRequest
+    private readonly ISiestaClient _siestaClient;
+
+    public CustomerService(ISiestaClient siestaClient)
     {
-        Id = id,
-    };
-    
-    var response = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
-    
-    var customerDto = request.ExtractResourceFromReturn(response);
-    
-    return customerDto;
+        _siestaClient = siestaClient;
+    }
+
+    public async Task<CustomerDto> GetCustomerAsync(Guid id)
+    {
+        var request = new GetCustomerRequest { Id = id };
+        var response = await _siestaClient.SendAsync(request);
+        return request.ExtractResourceFromReturn(response);
+    }
 }
 ```
 
-###Get multiple of a resource
+---
 
-This endpoint returns a `SerializablePagedList<CustomerDto>`.
+## 📖 Detailed Usage Guide
 
-```c#
-[HttpGet("/v1/customers")]
-[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SerializablePagedList<CustomerDto>))]
+### Request Types
+
+Siesta provides three base request classes for different scenarios:
+
+| Base Class | Use Case | Returns Data? |
+|------------|----------|---------------|
+| `SiestaRequest` | DELETE, fire-and-forget operations | ❌ No |
+| `SiestaRequest<TResource, TReturn>` | GET, POST, PUT operations | ✅ Yes |
+| `SiestaPatchRequest<TReturn, TResource, TGetReturn>` | PATCH operations with diff | ✅ Yes |
+
+---
+
+### 📥 GET Single Resource
+
+**Controller:**
+```csharp
+[HttpGet("/v1/customers/{id}")]
+[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DataEnvelope<CustomerDto>))]
 [ProducesResponseType(StatusCodes.Status404NotFound)]
-public async Task<IActionResult> GetCustomer([FromQuery] CustomerFilterInformation filterInformation)
+public async Task<IActionResult> GetCustomer(Guid id)
 {
-    // Get customers using the filter information
-    return customerDtos;
+    var customer = await _customerService.GetByIdAsync(id);
+    return Ok(new DataEnvelope<CustomerDto> { Data = customer });
 }
 ```
 
-The `CustomerFilterInformation` looks something like this
-
-```c#
-public class CustomerFilterInformation : EnumerableFilterInformation
+**Request Configuration:**
+```csharp
+public class GetCustomerRequest : SiestaRequest<CustomerDto, DataEnvelope<CustomerDto>>
 {
-    public string Name { get; set; }
-}
-```
-
-Now we can use Siesta to configure a request
-
-```c#
-public class GetCustomersRequest : SiestaRequestBase<DeserializedPagedList<CustomerDto>>
-{
-    public CustomerFilterInformation FilterInformation { get; set; }
+    public Guid Id { get; set; }
 
     public override HttpRequestMessage GenerateRequestMessage()
     {
-        var queryString = QueryHelpers.AddQueryString($"v1/customers", this.FilterInformation.AsQueryDictionary())
-        var request = new HttpRequestMessage
+        return new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri(queryString),
+            RequestUri = new Uri($"v1/customers/{Id}", UriKind.Relative),
         };
-        
-        return request;
+    }
+    
+    public override CustomerDto ExtractResourceFromReturn(DataEnvelope<CustomerDto> returnObject)
+    {
+        return returnObject.Data;
     }
 }
 ```
 
-Then a consumer can simply use this with the Siesta client like so:
+**Consumer Usage:**
+```csharp
+var request = new GetCustomerRequest { Id = customerId };
+var response = await _siestaClient.SendAsync(request);
+var customer = request.ExtractResourceFromReturn(response);
+```
 
-```c#
-public async Task<DeserializedPagedList<CustomerDto>> GetCustomers(string name)
+---
+
+### 📋 GET Collection with Pagination & Filtering
+
+**Filter Information:**
+```csharp
+public class CustomerFilterInformation : EnumerableFilterInformation
 {
-    var request = new GetCustomerRequest
-    {
-        FilterInformation = new CustomerFilterInformation
-        {
-            Name = "My great customer",
-        },
-    };
-    
-    var customerDtos = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
-    
-    return customerDtos;
+    public string? Name { get; set; }
+    public string? Email { get; set; }
+    public DateTime? CreatedAfter { get; set; }
 }
 ```
 
-###Create a resource
-
-This endpoint returns a `CustomerDto`.
-
-```c#
-[HttpPost("/v1/customers")]
-[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CustomerDto))]
-public async Task<IActionResult> GetCustomer([FromBody] CreateCustomerDto createCustomerDto)
+**Controller:**
+```csharp
+[HttpGet("/v1/customers")]
+[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SerializablePagedList<CustomerDto>))]
+public async Task<IActionResult> GetCustomers([FromQuery] CustomerFilterInformation filter)
 {
-    // Use the dto to create a customer
-    return customerDto;
+    var customers = await _customerService.GetPagedAsync(filter);
+    return Ok(new SerializablePagedList<CustomerDto>(
+        customers.Items, 
+        filter.PageNumber, 
+        filter.PageSize, 
+        customers.TotalCount
+    ));
 }
 ```
 
-Now we can use Siesta to configure a request
-
-```c#
-public class CreateCustomersRequest : SiestaRequestBase<CustomerDto>
+**Request Configuration:**
+```csharp
+public class GetCustomersRequest : SiestaRequest<DeserializedPagedList<CustomerDto>, DeserializedPagedList<CustomerDto>>
 {
-    public CreateCustomerDto CreateCustoemrDto { get; set; }
+    public CustomerFilterInformation FilterInformation { get; set; } = new();
 
     public override HttpRequestMessage GenerateRequestMessage()
     {
-        var request = new HttpRequestMessage
+        var queryString = QueryHelpers.AddQueryString(
+            "v1/customers", 
+            FilterInformation.AsQueryDictionary()
+        );
+        
+        return new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(queryString, UriKind.Relative),
+        };
+    }
+    
+    public override DeserializedPagedList<CustomerDto> ExtractResourceFromReturn(
+        DeserializedPagedList<CustomerDto> returnObject) => returnObject;
+}
+```
+
+**Consumer Usage:**
+```csharp
+var request = new GetCustomersRequest
+{
+    FilterInformation = new CustomerFilterInformation
+    {
+        Name = "Acme",
+        PageNumber = 1,
+        PageSize = 25
+    }
+};
+
+var pagedCustomers = await _siestaClient.SendAsync(request);
+
+Console.WriteLine($"Page {pagedCustomers.PageNumber} of {pagedCustomers.PageCount}");
+Console.WriteLine($"Total: {pagedCustomers.TotalItemCount} customers");
+
+foreach (var customer in pagedCustomers.Items)
+{
+    Console.WriteLine($"- {customer.Name}");
+}
+```
+
+---
+
+### ➕ POST Create Resource
+
+**Controller:**
+```csharp
+[HttpPost("/v1/customers")]
+[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CustomerDto))]
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerDto dto)
+{
+    var customer = await _customerService.CreateAsync(dto);
+    return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
+}
+```
+
+**Request Configuration:**
+```csharp
+public class CreateCustomerRequest : SiestaRequest<CustomerDto, CustomerDto>
+{
+    public CreateCustomerDto CreateCustomerDto { get; set; } = null!;
+
+    public override HttpRequestMessage GenerateRequestMessage()
+    {
+        return new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("v1/customers"),
-            Body = JsonConvert.SerializeObject(this.CreateCustomerDto),
+            RequestUri = new Uri("v1/customers", UriKind.Relative),
+            Content = new StringContent(
+                JsonConvert.SerializeObject(CreateCustomerDto),
+                Encoding.UTF8,
+                "application/json"
+            ),
         };
-        
-        return request;
+    }
+    
+    public override CustomerDto ExtractResourceFromReturn(CustomerDto returnObject) => returnObject;
+}
+```
+
+**Consumer Usage:**
+```csharp
+var request = new CreateCustomerRequest
+{
+    CreateCustomerDto = new CreateCustomerDto
+    {
+        Name = "New Customer",
+        Email = "customer@example.com"
+    }
+};
+
+var createdCustomer = await _siestaClient.SendAsync(request);
+Console.WriteLine($"Created customer with ID: {createdCustomer.Id}");
+```
+
+---
+
+### 🔄 PATCH Update Resource (Smart Diff)
+
+Siesta's PATCH support is powerful—it automatically generates a JSON Patch document by comparing the original and modified versions of a resource.
+
+**Request Configuration:**
+```csharp
+public class UpdateCustomerRequest : SiestaPatchRequest<CustomerDto, CustomerDto, DataEnvelope<CustomerDto>>
+{
+    public Guid Id { get; set; }
+    public CustomerDto ModifiedCustomer { get; set; } = null!;
+
+    public override HttpRequestMessage GenerateGetRequestMessage()
+    {
+        return new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri($"v1/customers/{Id}", UriKind.Relative),
+        };
+    }
+
+    public override CustomerDto ExtractResourceFromGetReturn(DataEnvelope<CustomerDto> getReturn)
+    {
+        return getReturn.Data;
+    }
+
+    public override HttpRequestMessage GeneratePatchRequestMessage(CustomerDto originalResource)
+    {
+        var patchDocument = JsonPatchDocumentHelpers.GeneratePatchDocument(
+            originalResource, 
+            ModifiedCustomer
+        );
+
+        return new HttpRequestMessage
+        {
+            Method = HttpMethod.Patch,
+            RequestUri = new Uri($"v1/customers/{Id}", UriKind.Relative),
+            Content = new StringContent(
+                JsonConvert.SerializeObject(patchDocument.Operations),
+                Encoding.UTF8,
+                "application/json-patch+json"
+            ),
+        };
     }
 }
 ```
 
-Then a consumer can simply use this with the Siesta client like so:
-
-```c#
-public async Task<DeserializedPagedList<CustomerDto>> GetCustomers(string name)
+**Consumer Usage:**
+```csharp
+// Fetch, modify, and patch in one operation
+var request = new UpdateCustomerRequest
 {
-    var request = new GetCustomerRequest
+    Id = customerId,
+    ModifiedCustomer = new CustomerDto
     {
-        CreateCustomerDto = new CreateCustomerDto
+        Id = customerId,
+        Name = "Updated Name",  // Changed
+        Email = existingEmail   // Unchanged - won't be in patch
+    }
+};
+
+var updatedCustomer = await _siestaClient.SendAsync(request);
+```
+
+> **💡 How it works:** Siesta automatically:
+> 1. Fetches the current resource via GET
+> 2. Compares it with your modified version
+> 3. Generates a minimal JSON Patch document
+> 4. Sends only the changes via PATCH
+
+---
+
+### 🗑️ DELETE Resource
+
+**Request Configuration:**
+```csharp
+public class DeleteCustomerRequest : SiestaRequest
+{
+    public Guid Id { get; set; }
+
+    public override HttpRequestMessage GenerateRequestMessage()
+    {
+        return new HttpRequestMessage
         {
-            ...
-        },
-    };
-    
-    var customerDtos = await this.siestaClient.SendAsync<GetCustomerRequest>(request);
-    
-    return customerDtos;
+            Method = HttpMethod.Delete,
+            RequestUri = new Uri($"v1/customers/{Id}", UriKind.Relative),
+        };
+    }
 }
 ```
 
-### Patch request
+**Consumer Usage:**
+```csharp
+var request = new DeleteCustomerRequest { Id = customerId };
+await _siestaClient.SendAsync(request);
+```
 
-PATCH requests are rather special and challenging. Siesta provides a special request class for PATCH requests. It works based on the idea of having the modified version of a resource and then the original version provided to it. You therefore have to implement both a GET for the original resource and the PATCH request.
+---
 
-Siesta also provides a helper class for `JsonPatchDocument`. This class contains a method for generating a PATCH document by comparing two versions of a resource. This method is not perfect. It will handle nested properties and hierarchy.
+## ⚙️ Configuration
 
-It will also handle moving, adding or removing items in anything that implements `IList<T>`. However, it will not do nesting within an `IList<T>`. Therefore, for this to work properly anything complex inside an `IList` needs to implement comparisons, otherwise the PATCH will think every item in the list has changed, which may or may not cause issues.
+### Dependency Injection Setup
 
-It is recommended that you have a separate project to contain DTOs and Siesta requests that can be deployed as a Nuget package and consumed by any consumers of your API.
+Siesta provides a convenient extension method for registering clients with built-in correlation ID tracking and Serilog logging:
 
-Hopefully it can be seen that this gives you a much greater control over how your API is controlled. You can fully unit test your requests and the effort for making calls accurately only has to happen once!
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddSiestaClient<MyApiClient>(new CorrelationAndLoggingConfigurationOptions(
+        baseAddress: new Uri("https://api.example.com"),
+        systemName: "OrderService",
+        defaultHeaders: new Dictionary<string, string>
+        {
+            ["X-Api-Version"] = "2.0",
+            ["X-Client-Name"] = "MyApp"
+        },
+        authenticationHeaderValue: new AuthenticationHeaderValue("Bearer", GetAccessToken()),
+        loggerCorrelationId: "CorrelationId",
+        requestHeaderCorrelationIdKey: "X-Correlation-ID"
+    ));
+}
+```
 
-### Using a Siesta client you have been provided with
+### Configuration Options
 
-A Siesta client is perfectly primed to be injected as part of your DI provider at startup.
+| Option | Description | Default |
+|--------|-------------|---------|
+| `BaseAddress` | Base URL for all API requests | *Required* |
+| `SystemName` | Identifier for logging purposes | *Required* |
+| `DefaultHeaders` | Headers added to every request | `{}` |
+| `AuthenticationHeaderValue` | Auth header (e.g., Bearer token) | `null` |
+| `LoggerCorrelationId` | Serilog property name for correlation ID | `"CorrelationId"` |
+| `RequestHeaderCorrelationIdKey` | HTTP header name for correlation ID | `"X-Correlation-ID"` |
 
-You can do all configuration of you Siesta client yourself. Simply register it how you would register any other HttpClient[https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0#consumption-patterns].
+### Manual HttpClient Configuration
 
-However there are also some (currently one) extension methods to make registration easier. If there are some common use cases we will look to add these in future. If you think you have a common usage then please feel free to make a PR!
+For advanced scenarios, you can configure the HttpClient yourself:
 
-#### IServiceCollection extensions
+```csharp
+services.AddHttpClient<ISiestaClient, SiestaClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.example.com");
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+})
+.AddPolicyHandler(GetRetryPolicy())
+.AddPolicyHandler(GetCircuitBreakerPolicy());
+```
 
-You can use the `AddSiestaClientWithCorrelationIdAndSerilog` extension method to add a Siesta client that will log requests with Serilog and that will add a correlation id header to each request.
+---
 
-The current functionality includes:
-- Including a correlation id with each request if one has been set on the request
-- Logs info for every request made with System and machine information
-- Logs all failed requests as an error
+## 🔗 Correlation ID Support
 
+Track requests across distributed systems by passing correlation IDs:
+
+```csharp
+// Pass an existing correlation ID to maintain traceability
+var response = await _siestaClient.SendAsync(request, currentCorrelationId: "abc-123-xyz");
+```
+
+When using the built-in DI extension, correlation IDs are automatically:
+- Added to outgoing request headers
+- Logged with Serilog for each request
+- Propagated through the request chain
+
+---
+
+## ⚠️ Exception Handling
+
+Siesta provides specific exceptions for different failure scenarios:
+
+```csharp
+try
+{
+    var customer = await _siestaClient.SendAsync(request);
+}
+catch (SiestaHttpCallFailedException ex)
+{
+    // HTTP request failed (4xx, 5xx responses)
+    Console.WriteLine($"Status: {ex.FailedHttpResponseMessage.StatusCode}");
+    Console.WriteLine($"Response: {ex.Message}");
+}
+catch (SiestaContentException ex)
+{
+    // Response couldn't be deserialized
+    Console.WriteLine("Invalid response format");
+}
+catch (SiestaConfigurationException ex)
+{
+    // Request configuration error
+    Console.WriteLine($"Configuration error: {ex.Message}");
+}
+```
+
+| Exception | Cause |
+|-----------|-------|
+| `SiestaHttpCallFailedException` | Non-success HTTP status code |
+| `SiestaContentException` | Response deserialization failed |
+| `SiestaConfigurationException` | Invalid request configuration |
+| `SiestaRequestNotImplementedException` | Required method not overridden |
+
+---
+
+## 📦 Packaging Your API Client
+
+**Best Practice:** Create a separate NuGet package containing your DTOs and Siesta request classes. This allows API consumers to simply install your package and start making calls.
+
+```
+MyApi.Client/
+├── DTOs/
+│   ├── CustomerDto.cs
+│   └── CreateCustomerDto.cs
+├── Requests/
+│   ├── GetCustomerRequest.cs
+│   ├── GetCustomersRequest.cs
+│   ├── CreateCustomerRequest.cs
+│   └── UpdateCustomerRequest.cs
+├── Filters/
+│   └── CustomerFilterInformation.cs
+└── MyApiClient.cs
+```
+
+**MyApiClient.cs:**
+```csharp
+public class MyApiClient : SiestaClient
+{
+    public MyApiClient(HttpClient httpClient) : base(httpClient) { }
+    
+    public MyApiClient(HttpClient httpClient, SiestaClientConfigurationOptions options) 
+        : base(httpClient, options) { }
+}
+```
+
+Consumers can then use your client with minimal setup:
+
+```csharp
+services.AddSiestaClient<MyApiClient>(options);
+```
+
+---
+
+## 🧪 Testing
+
+Siesta's design makes testing straightforward:
+
+### Unit Testing Requests
+
+```csharp
+[Fact]
+public void GetCustomerRequest_GeneratesCorrectUri()
+{
+    // Arrange
+    var request = new GetCustomerRequest 
+    { 
+        Id = Guid.Parse("12345678-1234-1234-1234-123456789012") 
+    };
+
+    // Act
+    var httpRequest = request.GenerateRequestMessage();
+
+    // Assert
+    Assert.Equal(HttpMethod.Get, httpRequest.Method);
+    Assert.Equal("v1/customers/12345678-1234-1234-1234-123456789012", httpRequest.RequestUri?.ToString());
+}
+```
+
+### Integration Testing with Mocked HttpClient
+
+```csharp
+[Fact]
+public async Task GetCustomer_ReturnsCustomer_WhenFound()
+{
+    // Arrange
+    var expectedCustomer = new CustomerDto { Id = Guid.NewGuid(), Name = "Test" };
+    var mockHandler = new MockHttpMessageHandler(new HttpResponseMessage
+    {
+        StatusCode = HttpStatusCode.OK,
+        Content = new StringContent(JsonConvert.SerializeObject(
+            new DataEnvelope<CustomerDto> { Data = expectedCustomer }
+        ))
+    });
+    
+    var client = new SiestaClient(new HttpClient(mockHandler) 
+    { 
+        BaseAddress = new Uri("https://api.test.com") 
+    });
+
+    // Act
+    var request = new GetCustomerRequest { Id = expectedCustomer.Id };
+    var response = await client.SendAsync(request);
+    var result = request.ExtractResourceFromReturn(response);
+
+    // Assert
+    Assert.Equal(expectedCustomer.Name, result.Name);
+}
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'feat: add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+Please ensure your PR:
+- Follows the existing code style
+- Includes appropriate tests
+- Updates documentation as needed
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](MITLicense.txt) file for details.
+
+---
+
+<p align="center">
+  <strong>Built with ☕ by the LoopUp team</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/loopup/siesta/issues">Report Bug</a>
+  ·
+  <a href="https://github.com/loopup/siesta/issues">Request Feature</a>
+</p>
